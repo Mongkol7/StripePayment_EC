@@ -136,8 +136,8 @@ This document outlines the collaborative engineering plan, role distribution, re
 ## 🔄 Git Branching & Collaboration Strategy
 
 ```text
-main (Production / Stable Release)
- └── dev (Integration Branch)
+main (Production / Protected Release)
+ └── develop (Integration Branch - Collaborators push here)
       ├── feature/p1-stripe-audit-refund  (Person 1)
       ├── feature/p2-cart-stock-email     (Person 2)
       └── feature/p3-catalog-cart-receipt (Person 3)
@@ -145,12 +145,12 @@ main (Production / Stable Release)
 
 ### Git Workflow Steps
 
-1. **Clone repository and create personal branch:**
+1. **Clone repository and checkout `develop`:**
 
    ```bash
    git clone <repository_url>
-   git checkout -b dev
-   git checkout -b feature/<your-feature-name> dev
+   git checkout develop
+   git checkout -b feature/<your-feature-name> develop
    ```
 
 2. **Configure your local properties:**
@@ -168,8 +168,9 @@ main (Production / Stable Release)
    git commit -m "feat(p3): add product catalog grid and cart sliding drawer"
    ```
 
-4. **Pull request to `dev`:**
-   - Push your feature branch and open a PR into `dev`.
+4. **Pull request to `develop`:**
+   - Push your feature branch and open a PR into `develop`.
+   - Once all tasks pass testing on `develop`, merge `develop` into `main`.
    - Have at least one teammate review the PR before merging.
 
 ---
