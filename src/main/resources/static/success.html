@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Successful | Receipt</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <main class="checkout-wrapper">
+    <div class="glass-card">
+      
+      <div class="success-icon-wrap">
+        ✓
+      </div>
+
+      <div class="card-header">
+        <h1 class="card-title" style="color: #34d399;">Payment Successful!</h1>
+        <p class="card-subtitle">Thank you. Your transaction has been confirmed by Stripe.</p>
+      </div>
+
+      <!-- Receipt Information -->
+      <div class="receipt-box" id="receiptContent">
+        <div class="receipt-row">
+          <span class="label">Status</span>
+          <span class="val"><span class="status-badge status-completed">COMPLETED</span></span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Order Reference</span>
+          <span class="val" id="receiptOrderRef">Loading...</span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Amount Paid</span>
+          <span class="val" id="receiptAmount" style="color: #34d399; font-size: 1.1rem;">Loading...</span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Customer Name</span>
+          <span class="val" id="receiptCustomer">Loading...</span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Email Receipt</span>
+          <span class="val" id="receiptEmail">Loading...</span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Stripe Session ID</span>
+          <span class="val" id="receiptSession" style="font-size: 0.72rem; word-break: break-all;">-</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" onclick="window.print()" class="btn-preset" style="flex: 1; padding: 0.85rem;">
+          🖨️ Print Receipt
+        </button>
+        <a href="/" class="btn-stripe-pay" style="flex: 2; text-decoration: none; text-align: center;">
+          <span>Make Another Payment</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionId = urlParams.get('session_id');
+      const orderRef = urlParams.get('order_ref');
+
+      try {
+        let endpoint = '';
+        if (sessionId) {
+          endpoint = `/api/v1/payments/confirm/${sessionId}`;
+        } else if (orderRef) {
+          endpoint = `/api/v1/payments/receipt/${orderRef}`;
+        }
+
+        if (endpoint) {
+          const res = await fetch(endpoint);
+          if (res.ok) {
+            const data = await res.json();
+            document.getElementById('receiptOrderRef').textContent = data.orderReference || orderRef || 'N/A';
+            document.getElementById('receiptAmount').textContent = `$${parseFloat(data.amount).toFixed(2)} ${data.currency}`;
+            document.getElementById('receiptCustomer').textContent = data.customerName || 'Customer';
+            document.getElementById('receiptEmail').textContent = data.customerEmail || 'N/A';
+            document.getElementById('receiptSession').textContent = data.stripeSessionId || sessionId || '-';
+          }
+        } else {
+          document.getElementById('receiptOrderRef').textContent = 'TEST-ORDER';
+          document.getElementById('receiptAmount').textContent = '$15.00 USD';
+          document.getElementById('receiptCustomer').textContent = 'Valued Customer';
+        }
+      } catch (err) {
+        console.error('Error fetching receipt:', err);
+      }
+    });
+  </script>
+
+</body>
+</html>

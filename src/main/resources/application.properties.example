@@ -1,0 +1,36 @@
+# ===================================================================
+# Application Server Configuration
+# ===================================================================
+spring.application.name=stripe-payment-ec
+server.port=3000
+
+# ===================================================================
+# PostgreSQL Database Configuration
+# Create database 'stripepayment_ec' in PostgreSQL 18
+# ===================================================================
+spring.datasource.url=jdbc:postgresql://localhost:5432/stripepayment_ec
+spring.datasource.username=postgres
+spring.datasource.password=your_postgres_password_here
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# ===================================================================
+# JPA / Hibernate Configuration
+# ===================================================================
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.open-in-view=false
+
+# ===================================================================
+# Stripe Payment Gateway Configuration
+# Obtain your test keys at https://dashboard.stripe.com/test/apikeys
+# Can be overridden via environment variables:
+# STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET
+# ===================================================================
+stripe.api.key=${STRIPE_SECRET_KEY:sk_test_replace_with_your_stripe_secret_key}
+stripe.publishable.key=${STRIPE_PUBLISHABLE_KEY:pk_test_replace_with_your_stripe_publishable_key}
+stripe.webhook.secret=${STRIPE_WEBHOOK_SECRET:whsec_replace_with_your_webhook_signing_secret}
+stripe.currency=usd
+
+# Base URL for Stripe redirect callbacks
+app.base-url=http://localhost:3000

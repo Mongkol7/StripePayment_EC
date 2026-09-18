@@ -113,7 +113,7 @@ StripePayment_EC_FinalY4sm1/
 │   │       │   └── success.html               # Payment confirmation receipt
 │   │       ├── templates/
 │   │       │   └── .gitkeep
-│   │       └── application.properties         # Port 3000, DB & Stripe configuration
+│   │       └── application.properties.example # Safe configuration template (tracked in Git)
 │   └── test/
 │       └── java/com/ecommerce/payment/
 │           └── StripePaymentEcApplicationTests.java
@@ -136,29 +136,34 @@ StripePayment_EC_FinalY4sm1/
 
 ---
 
-## ⚙️ Configuration (`application.properties`)
+## ⚙️ Configuration Setup
 
-```properties
-# Server
-server.port=3000
+To keep database credentials and Stripe secret keys secure, the real `application.properties` is ignored by Git.
 
-# PostgreSQL Database
-spring.datasource.url=jdbc:postgresql://localhost:5432/stripepayment_ec
-spring.datasource.username=postgres
-spring.datasource.password=123
-spring.datasource.driver-class-name=org.postgresql.Driver
+1. Copy the example file:
 
-# JPA / Hibernate
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
+   ```bash
+   cp src/main/resources/application.properties.example src/main/resources/application.properties
+   ```
 
-# Stripe Configuration
-# (Can be overridden using Environment variables: STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY)
-stripe.api.key=sk_test_your_secret_key_here
-stripe.publishable.key=pk_test_your_publishable_key_here
-stripe.currency=usd
-app.base-url=http://localhost:3000
-```
+2. Update your local credentials inside `src/main/resources/application.properties`:
+
+   ```properties
+   # Server
+   server.port=3000
+
+   # PostgreSQL Database
+   spring.datasource.url=jdbc:postgresql://localhost:5432/stripepayment_ec
+   spring.datasource.username=postgres
+   spring.datasource.password=your_password_here
+   spring.datasource.driver-class-name=org.postgresql.Driver
+
+   # Stripe Configuration (Test Mode)
+   stripe.api.key=sk_test_your_secret_key_here
+   stripe.publishable.key=pk_test_your_publishable_key_here
+   stripe.currency=usd
+   app.base-url=http://localhost:3000
+   ```
 
 ---
 

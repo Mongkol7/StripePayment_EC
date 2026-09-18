@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Cancelled</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <main class="checkout-wrapper">
+    <div class="glass-card">
+      
+      <div class="cancel-icon-wrap">
+        ✕
+      </div>
+
+      <div class="card-header">
+        <h1 class="card-title" style="color: #fb7185;">Payment Cancelled</h1>
+        <p class="card-subtitle">Your transaction was not completed. No charges were made to your card.</p>
+      </div>
+
+      <div class="receipt-box">
+        <div class="receipt-row">
+          <span class="label">Status</span>
+          <span class="val"><span class="status-badge status-cancelled">CANCELLED</span></span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Order Reference</span>
+          <span class="val" id="cancelOrderRef">-</span>
+        </div>
+        <div class="receipt-row">
+          <span class="label">Reason</span>
+          <span class="val" style="color: #94a3b8;">User cancelled or session expired</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="/" class="btn-stripe-pay" style="width: 100%; text-decoration: none; text-align: center;">
+          <span>Return to Checkout & Try Again</span>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderRef = urlParams.get('order_ref');
+
+      if (orderRef) {
+        document.getElementById('cancelOrderRef').textContent = orderRef;
+        try {
+          await fetch(`/api/v1/payments/cancel/${orderRef}`, { method: 'POST' });
+        } catch (e) {
+          console.warn('Could not notify cancellation:', e);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
