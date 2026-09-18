@@ -2,7 +2,7 @@
 # Application Server Configuration
 # ===================================================================
 spring.application.name=stripe-payment-ec
-server.port=3000
+server.port=3001
 
 # ===================================================================
 # PostgreSQL Database Configuration
@@ -34,5 +34,5 @@ stripe.currency=usd
 stripe.khr-to-usd-rate=4100.0
 
 # Base URL for Stripe redirect callbacks
-app.base-url=http://localhost:3000
+app.base-url=http://localhost:3001
 
