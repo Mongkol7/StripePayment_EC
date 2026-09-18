@@ -1,11 +1,11 @@
 package com.ecommerce.payment.controller;
 
-import com.ecommerce.payment.dto.OrderReceiptDto;
-import com.ecommerce.payment.dto.PaymentRequestDto;
-import com.ecommerce.payment.dto.PaymentResponseDto;
+import com.ecommerce.payment.dto.*;
 import com.ecommerce.payment.service.PaymentOrderService;
 import com.ecommerce.payment.service.StripeService;
+import com.stripe.model.Charge;
 import com.stripe.model.Event;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -62,6 +63,35 @@ public class PaymentApiController {
     }
 
     /**
+     * Executes a full or partial refund for a completed order.
+     */
+    @PostMapping("/refund/{orderReference}")
+    public ResponseEntity<?> processRefund(
+            @PathVariable String orderReference,
+            @RequestBody(required = false) RefundRequestDto request) {
+        try {
+            RefundResponseDto response = paymentOrderService.processRefund(orderReference, request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error executing refund for order: {}", orderReference, e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "error", "Refund failed",
+                            "message", e.getMessage()
+                    ));
+        }
+    }
+
+    /**
+     * Retrieves audit transaction history for a given order reference.
+     */
+    @GetMapping("/transactions/{orderReference}")
+    public ResponseEntity<List<PaymentTransactionDto>> getTransactions(@PathVariable String orderReference) {
+        List<PaymentTransactionDto> transactions = paymentOrderService.getTransactionHistory(orderReference);
+        return ResponseEntity.ok(transactions);
+    }
+
+    /**
      * Notifies order cancellation when checkout is cancelled by user.
      */
     @PostMapping("/cancel/{orderReference}")
@@ -81,11 +111,29 @@ public class PaymentApiController {
             Event event = stripeService.constructWebhookEvent(payload, sigHeader);
             log.info("Stripe Webhook received: Type={}, ID={}", event.getType(), event.getId());
 
-            if ("checkout.session.completed".equals(event.getType())) {
-                Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
-                if (session != null) {
-                    paymentOrderService.confirmPaymentBySessionId(session.getId());
+            switch (event.getType()) {
+                case "checkout.session.completed" -> {
+                    Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
+                    if (session != null) {
+                        paymentOrderService.confirmPaymentBySessionId(session.getId());
+                    }
                 }
+                case "payment_intent.payment_failed" -> {
+                    PaymentIntent failedIntent = (PaymentIntent) event.getDataObjectDeserializer().getObject().orElse(null);
+                    if (failedIntent != null) {
+                        log.warn("PaymentIntent failed: ID={}, Error={}", 
+                                failedIntent.getId(), 
+                                failedIntent.getLastPaymentError() != null ? failedIntent.getLastPaymentError().getMessage() : "Unknown");
+                    }
+                }
+                case "charge.refunded" -> {
+                    Charge refundedCharge = (Charge) event.getDataObjectDeserializer().getObject().orElse(null);
+                    if (refundedCharge != null) {
+                        log.info("Charge refunded webhook received: ChargeID={}, AmountRefunded={}", 
+                                refundedCharge.getId(), refundedCharge.getAmountRefunded());
+                    }
+                }
+                default -> log.debug("Unhandled webhook event type: {}", event.getType());
             }
 
             return ResponseEntity.ok("Webhook processed");
