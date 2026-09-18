@@ -33,12 +33,12 @@ This document outlines the collaborative engineering plan, role distribution, re
 
 ### Person 1 Remaining Tasks
 
-- [ ] **Task 1.1: Environment & Real Stripe Test Keys Setup**
+- [x] **Task 1.1: Environment & Real Stripe Test Keys Setup**
   - Copy `src/main/resources/application.properties.example` to `application.properties` (ignored by git).
   - Register a free Stripe account at [dashboard.stripe.com](https://dashboard.stripe.com/test/apikeys) and obtain real `pk_test_...` and `sk_test_...` keys.
   - Verify PostgreSQL connection to local database `stripepayment_ec` on port `5432`.
 
-- [ ] **Task 1.2: Local Webhook Listener with Stripe CLI**
+- [x] **Task 1.2: Local Webhook Listener with Stripe CLI**
   - Download and run the Stripe CLI tool.
   - Forward live webhook events to local Spring Boot:
 
@@ -48,17 +48,17 @@ This document outlines the collaborative engineering plan, role distribution, re
 
   - Copy the signing secret (`whsec_...`) into `application.properties`.
 
-- [ ] **Task 1.3: Payment Transaction Audit Ledger (`PaymentTransaction` Entity)**
+- [x] **Task 1.3: Payment Transaction Audit Ledger (`PaymentTransaction` Entity)**
   - Create a dedicated audit entity `PaymentTransaction.java` with table `payment_transactions`.
   - Record each transaction attempt: `transactionId`, `paymentOrderId`, `stripeChargeId`, `paymentMethod` (e.g. Visa/Mastercard), `cardLast4`, `cardBrand`, `failureCode`, and `rawEventPayload`.
   - Create `PaymentTransactionRepository.java` to query transaction history by order reference.
 
-- [ ] **Task 1.4: Stripe Refund Integration**
+- [x] **Task 1.4: Stripe Refund Integration**
   - Implement refund method in `StripeService.java` using `com.stripe.model.Refund.create()`.
   - Support both full and partial refunds given a `paymentIntentId` or `chargeId`.
   - Update `PaymentOrder` status to `REFUNDED` upon successful refund event.
 
-- [ ] **Task 1.5: Currency Converter (USD / KHR)**
+- [x] **Task 1.5: Currency Converter (USD / KHR)**
   - Build a conversion helper to calculate Khmer Riel (KHR) amounts into USD (e.g. standard rate `1 USD = 4,100 KHR`).
   - Ensure Stripe line items always settle in USD cents for Cambodian bank card transactions.
 

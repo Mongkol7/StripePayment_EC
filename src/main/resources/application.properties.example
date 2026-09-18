@@ -2,7 +2,7 @@
 # Application Server Configuration
 # ===================================================================
 spring.application.name=stripe-payment-ec
-server.port=3000
+server.port=3001
 
 # ===================================================================
 # PostgreSQL Database Configuration
@@ -31,6 +31,8 @@ stripe.api.key=${STRIPE_SECRET_KEY:sk_test_replace_with_your_stripe_secret_key}
 stripe.publishable.key=${STRIPE_PUBLISHABLE_KEY:pk_test_replace_with_your_stripe_publishable_key}
 stripe.webhook.secret=${STRIPE_WEBHOOK_SECRET:whsec_replace_with_your_webhook_signing_secret}
 stripe.currency=usd
+stripe.khr-to-usd-rate=4100.0
 
 # Base URL for Stripe redirect callbacks
-app.base-url=http://localhost:3000
+app.base-url=http://localhost:3001
+

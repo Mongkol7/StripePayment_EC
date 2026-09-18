@@ -3,9 +3,14 @@ package com.ecommerce.payment.service;
 import com.ecommerce.payment.dto.PaymentRequestDto;
 import com.ecommerce.payment.model.entity.PaymentOrder;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Charge;
+import com.stripe.model.PaymentIntent;
+import com.stripe.model.Refund;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
+import com.stripe.param.RefundCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,13 +18,16 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class StripeService {
+
+    private final CurrencyConverterService currencyConverterService;
 
     @Value("${stripe.currency:usd}")
     private String currency;
 
-    @Value("${app.base-url:http://localhost:3000}")
+    @Value("${app.base-url:http://localhost:3001}")
     private String baseUrl;
 
     @Value("${stripe.webhook.secret:}")
@@ -27,21 +35,31 @@ public class StripeService {
 
     /**
      * Creates a Stripe Checkout Session for a given payment order.
-     * Amount is multiplied by 100 as Stripe handles amounts in cents (e.g. $10.50 -> 1050 cents).
+     * Supports both USD directly and KHR automatically converted to USD cents.
      */
     public Session createCheckoutSession(PaymentOrder order, PaymentRequestDto request) throws StripeException {
-        long amountInCents = order.getAmount().multiply(new BigDecimal("100")).longValue();
+        BigDecimal finalAmountInUsd = order.getAmount();
+
+        // If currency is KHR, convert to USD for Stripe settlement
+        if ("KHR".equalsIgnoreCase(order.getCurrency())) {
+            finalAmountInUsd = currencyConverterService.convertKhrToUsd(order.getAmount());
+            log.info("Converted KHR {} to USD {} for Stripe Session", order.getAmount(), finalAmountInUsd);
+        }
+
+        long amountInCents = currencyConverterService.toStripeCents(finalAmountInUsd);
 
         String productName = (order.getDescription() != null && !order.getDescription().isBlank())
                 ? order.getDescription()
                 : "E-Commerce Payment (" + order.getOrderReference() + ")";
 
-        SessionCreateParams params = SessionCreateParams.builder()
+        SessionCreateParams.Builder paramsBuilder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setCustomerEmail(order.getCustomerEmail())
                 .setClientReferenceId(order.getOrderReference())
                 .putMetadata("orderReference", order.getOrderReference())
                 .putMetadata("customerName", order.getCustomerName())
+                .putMetadata("originalCurrency", order.getCurrency())
+                .putMetadata("originalAmount", order.getAmount().toString())
                 .setSuccessUrl(baseUrl + "/success.html?session_id={CHECKOUT_SESSION_ID}&order_ref=" + order.getOrderReference())
                 .setCancelUrl(baseUrl + "/cancel.html?order_ref=" + order.getOrderReference())
                 .addLineItem(
@@ -49,7 +67,7 @@ public class StripeService {
                                 .setQuantity(1L)
                                 .setPriceData(
                                         SessionCreateParams.LineItem.PriceData.builder()
-                                                .setCurrency(order.getCurrency().toLowerCase())
+                                                .setCurrency("usd")
                                                 .setUnitAmount(amountInCents)
                                                 .setProductData(
                                                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
@@ -60,12 +78,36 @@ public class StripeService {
                                                 .build()
                                 )
                                 .build()
-                )
-                .build();
+                );
 
-        Session session = Session.create(params);
+        Session session = Session.create(paramsBuilder.build());
         log.info("Stripe Checkout Session created: ID={}, URL={}", session.getId(), session.getUrl());
         return session;
+    }
+
+    /**
+     * Issues a full or partial refund for a completed payment.
+     */
+    public Refund createRefund(String paymentIntentId, BigDecimal amountInUsd, String reason) throws StripeException {
+        RefundCreateParams.Builder paramsBuilder = RefundCreateParams.builder()
+                .setPaymentIntent(paymentIntentId);
+
+        if (amountInUsd != null && amountInUsd.compareTo(BigDecimal.ZERO) > 0) {
+            paramsBuilder.setAmount(currencyConverterService.toStripeCents(amountInUsd));
+        }
+
+        if (reason != null && !reason.isBlank()) {
+            try {
+                paramsBuilder.setReason(RefundCreateParams.Reason.valueOf(reason.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                paramsBuilder.setReason(RefundCreateParams.Reason.REQUESTED_BY_CUSTOMER);
+            }
+        }
+
+        Refund refund = Refund.create(paramsBuilder.build());
+        log.info("Stripe Refund executed: RefundID={}, Status={}, AmountCents={}", 
+                refund.getId(), refund.getStatus(), refund.getAmount());
+        return refund;
     }
 
     /**
@@ -76,11 +118,25 @@ public class StripeService {
     }
 
     /**
+     * Retrieves a Stripe PaymentIntent.
+     */
+    public PaymentIntent retrievePaymentIntent(String paymentIntentId) throws StripeException {
+        return PaymentIntent.retrieve(paymentIntentId);
+    }
+
+    /**
+     * Retrieves a Stripe Charge.
+     */
+    public Charge retrieveCharge(String chargeId) throws StripeException {
+        return Charge.retrieve(chargeId);
+    }
+
+    /**
      * Verifies and constructs Stripe Webhook Event.
      */
     public com.stripe.model.Event constructWebhookEvent(String payload, String sigHeader) throws Exception {
         if (webhookSecret == null || webhookSecret.isBlank()) {
-            throw new IllegalStateException("Stripe webhook secret is not configured.");
+            throw new IllegalStateException("Stripe webhook secret is not configured in application.properties.");
         }
         return Webhook.constructEvent(payload, sigHeader, webhookSecret);
     }
