@@ -269,4 +269,3 @@ The application will start on: **`http://localhost:3000`**
 ## 📜 License
 
 This project is open-source and ready for educational and commercial integration.
-"# StriptPayment_EC" 
