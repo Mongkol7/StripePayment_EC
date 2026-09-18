@@ -68,11 +68,11 @@ A modern, high-performance **Spring Boot** application for processing online pay
 
 For complete task breakdown and sprint milestones, see [PROJECT_PLAN.md](PROJECT_PLAN.md).
 
-| Role | Name / Assignee | Core Focus | Key Deliverables |
-| :--- | :--- | :--- | :--- |
-| **Person 1** | Backend & Gateway Specialist | PostgreSQL & Stripe SDK | `PaymentOrder` entity, `stripepayment_ec` DB config, `StripeService.java`, Webhook handling |
-| **Person 2** | API & E-Commerce Architect | Business Logic & REST APIs | DTO validation, `PaymentOrderService.java`, `PaymentApiController.java`, order status state machine |
-| **Person 3** | Frontend & UX Developer | UI/UX & Client Integration | `index.html`, `success.html`, `cancel.html`, `style.css`, `app.js`, checkout redirection |
+| Role         | Name / Assignee              | Core Focus                 | Key Deliverables                                                                                    |
+| :----------- | :--------------------------- | :------------------------- | :-------------------------------------------------------------------------------------------------- |
+| **Person 1** | Backend & Gateway Specialist | PostgreSQL & Stripe SDK    | `PaymentOrder` entity, `stripepayment_ec` DB config, `StripeService.java`, Webhook handling         |
+| **Person 2** | API & E-Commerce Architect   | Business Logic & REST APIs | DTO validation, `PaymentOrderService.java`, `PaymentApiController.java`, order status state machine |
+| **Person 3** | Frontend & UX Developer      | UI/UX & Client Integration | `index.html`, `success.html`, `cancel.html`, `style.css`, `app.js`, checkout redirection            |
 
 ---
 
@@ -218,7 +218,7 @@ The application will start on: **`http://localhost:3000`**
 
 ```json
 {
-  "amount": 15.00,
+  "amount": 15.0,
   "currency": "USD",
   "customerName": "Sopheak Chan",
   "customerEmail": "sopheak@example.com",
@@ -246,7 +246,7 @@ The application will start on: **`http://localhost:3000`**
 ```json
 {
   "orderReference": "ORD-20260918-A79B1C",
-  "amount": 15.00,
+  "amount": 15.0,
   "currency": "USD",
   "status": "COMPLETED",
   "customerName": "Sopheak Chan",
@@ -269,4 +269,4 @@ The application will start on: **`http://localhost:3000`**
 ## 📜 License
 
 This project is open-source and ready for educational and commercial integration.
-"# StriptPayment_EC" 
+"# StriptPayment_EC"

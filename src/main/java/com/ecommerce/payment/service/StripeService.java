@@ -19,7 +19,7 @@ public class StripeService {
     @Value("${stripe.currency:usd}")
     private String currency;
 
-    @Value("${app.base-url:http://localhost:3000}")
+    @Value("${app.base-url:http://localhost:3001}")
     private String baseUrl;
 
     @Value("${stripe.webhook.secret:}")

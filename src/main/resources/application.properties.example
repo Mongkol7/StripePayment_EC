@@ -2,7 +2,7 @@
 # Application Server Configuration
 # ===================================================================
 spring.application.name=stripe-payment-ec
-server.port=3000
+server.port=3001
 
 # ===================================================================
 # PostgreSQL Database Configuration
@@ -33,4 +33,4 @@ stripe.webhook.secret=${STRIPE_WEBHOOK_SECRET:whsec_replace_with_your_webhook_si
 stripe.currency=usd
 
 # Base URL for Stripe redirect callbacks
-app.base-url=http://localhost:3000
+app.base-url=http://localhost:3001
