@@ -226,6 +226,29 @@ public class PaymentOrderService {
         return mapToReceiptDto(order);
     }
 
+    /**
+     * Searches customer orders by email, order reference, or retrieves latest orders if query is blank.
+     */
+    @Transactional(readOnly = true)
+    public List<OrderReceiptDto> searchOrders(String query) {
+        List<PaymentOrder> orders;
+        if (query == null || query.isBlank()) {
+            orders = paymentOrderRepository.findTop20ByOrderByCreatedAtDesc();
+        } else {
+            String trimmed = query.trim();
+            if (trimmed.contains("@")) {
+                orders = paymentOrderRepository.findByCustomerEmailIgnoreCaseOrderByCreatedAtDesc(trimmed);
+            } else {
+                orders = paymentOrderRepository.findByOrderReferenceContainingIgnoreCaseOrderByCreatedAtDesc(trimmed);
+                if (orders.isEmpty()) {
+                    orders = paymentOrderRepository.findByCustomerEmailIgnoreCaseOrderByCreatedAtDesc(trimmed);
+                }
+            }
+        }
+        return orders.stream().map(this::mapToReceiptDto).collect(Collectors.toList());
+    }
+
+
     private void recordAuditTransaction(PaymentOrder order, PaymentTransactionType type,
                                          BigDecimal amount, String sessionId, String paymentIntentId,
                                          String chargeId, String cardBrand, String cardLast4,

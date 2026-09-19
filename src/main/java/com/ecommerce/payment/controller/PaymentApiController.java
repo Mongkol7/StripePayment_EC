@@ -63,6 +63,15 @@ public class PaymentApiController {
     }
 
     /**
+     * Searches order history by customer email or order reference.
+     */
+    @GetMapping("/orders/lookup")
+    public ResponseEntity<List<OrderReceiptDto>> lookupOrders(@RequestParam(required = false) String query) {
+        List<OrderReceiptDto> orders = paymentOrderService.searchOrders(query);
+        return ResponseEntity.ok(orders);
+    }
+
+    /**
      * Executes a full or partial refund for a completed order.
      */
     @PostMapping("/refund/{orderReference}")
