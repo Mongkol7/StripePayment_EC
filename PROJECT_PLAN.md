@@ -110,26 +110,27 @@ This document outlines the collaborative engineering plan, role distribution, re
 
 ### Person 3 Remaining Tasks
 
-- [ ] **Task 3.1: Product Showcase Grid & Cart Drawer UI**
+- [x] **Task 3.1: Product Showcase Grid & Cart Drawer UI**
   - Build an interactive catalog page showing book/item cards with image, price in USD, and "Add to Cart" button.
   - Build a sliding cart drawer displaying added items, quantity increment/decrement controls, subtotal calculation, and "Proceed to Checkout" button.
 
-- [ ] **Task 3.2: Dual Payment Method Selector UI**
+- [x] **Task 3.2: Dual Payment Method Selector UI**
   - Update checkout interface with tabbed payment method selection:
     - 💳 **Tab 1: Credit/Debit Card (Visa / Mastercard via Stripe)**
     - 📱 **Tab 2: KHQR (Bakong / ABA)** — renders a simulated KHQR popup modal explaining domestic banking app scanning.
 
-- [ ] **Task 3.3: Live Currency Switcher (USD / KHR)**
+- [x] **Task 3.3: Live Currency Switcher (USD / KHR)**
   - Add a navbar toggle between `$ USD` and `៛ KHR`.
   - Dynamically recalculate and display prices in Khmer Riel using standard exchange rate (`1 USD = 4,100 KHR`).
 
-- [ ] **Task 3.4: Downloadable PDF Invoice on Success Page**
+- [x] **Task 3.4: Downloadable PDF Invoice on Success Page**
   - Add a **Download PDF Receipt** button on `success.html`.
   - Use `html2pdf.js` or dedicated CSS `@media print` layout with merchant header, item table, and transaction verification code.
 
-- [ ] **Task 3.5: Customer Order History Page (`orders.html`)**
+- [x] **Task 3.5: Customer Order History Page (`orders.html`)**
   - Build an order lookup page where customers enter their email or order reference.
   - Fetch and display past orders, payment statuses (`COMPLETED`, `PENDING`, `CANCELLED`), and downloadable receipts.
+
 
 ---
 
