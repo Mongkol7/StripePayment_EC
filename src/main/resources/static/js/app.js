@@ -17,73 +17,341 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'book-1',
             title: 'Cloud-Native Spring Boot 3 Microservices',
             category: 'BACKEND',
-            author: 'Mastering Distributed Systems',
+            categoryName: 'Spring Boot 3 & Cloud Architecture',
+            author: 'Design, Build & Deploy Resilient Distributed Systems on Kubernetes',
             priceUsd: 0.10,
             rating: '5.0 (128 reviews)',
             badge: 'bestseller',
             badgeText: 'BESTSELLER',
             icon: '☕',
-            description: 'Comprehensive guide covering Spring Cloud, Docker, Kubernetes, Stripe payments, and reactive microservices.'
+            coverImage: '/images/covers/cloud-native-spring-boot.jpg',
+            description: 'Comprehensive guide covering Spring Cloud, Docker, Kubernetes, Stripe payments, and reactive microservices.',
+            highlights: [
+                'Java 21 & Spring Boot 3 Core Production Setup',
+                'Spring Cloud Discovery, Config Server & Gateway',
+                'Docker Multi-Stage & Kubernetes Deployments',
+                'Apache Kafka High-Throughput Event Streams',
+                'Observability: Grafana, Tempo & Distributed Tracing',
+                'Distributed Transactions, Saga & Outbox Patterns'
+            ],
+            modules: [
+                {
+                    number: '01',
+                    title: 'Cloud-Native Core & Java 21',
+                    topics: ['Java 21 runtime & Virtual Threads baseline', 'Spring Boot 3 configuration & dependency injection', 'Cloud configuration server & externalized properties']
+                },
+                {
+                    number: '02',
+                    title: 'Microservices & Domain Architecture',
+                    topics: ['Order, Payment, Inventory, User & Notification services', 'Spring Cloud Gateway dynamic routing & rate limiting', 'Service discovery & health check registries']
+                },
+                {
+                    number: '03',
+                    title: 'Event-Driven Messaging with Apache Kafka',
+                    topics: ['High-throughput event streaming & message schemas', 'Asynchronous pub/sub choreography between microservices', 'Consumer groups, partition balancing & replay mechanisms']
+                },
+                {
+                    number: '04',
+                    title: 'Distributed Transactions & Reliability',
+                    topics: ['Saga orchestration pattern for cross-service checkout', 'Transactional Outbox pattern for guaranteed delivery', 'Resilience4j circuit breakers, retries & fallbacks']
+                },
+                {
+                    number: '05',
+                    title: 'Observability & Kubernetes Deployment',
+                    topics: ['Distributed tracing with OpenTelemetry, Tempo & Grafana', 'Multi-stage Docker builds & Kubernetes manifests', 'Zero-downtime rolling deploys & production liveness probes']
+                }
+            ],
+            specs: {
+                pages: '520 Pages',
+                format: 'PDF + ePub + Source Repos',
+                edition: '2026 Enterprise Edition',
+                level: 'Intermediate to Advanced'
+            }
         },
         {
             id: 'book-2',
             title: 'System Design Interview Blueprint',
             category: 'ARCHITECTURE',
-            author: 'Enterprise Scale Architectures',
+            categoryName: 'Enterprise Scale Architectures',
+            author: 'Mastering Modern High-Availability Architectures',
             priceUsd: 0.08,
             rating: '4.9 (94 reviews)',
             badge: 'hot',
             badgeText: 'HOT',
             icon: '🏛️',
-            description: 'Learn high-availability patterns, distributed caching, rate limiters, payment webhooks, and event-driven architectures.'
+            coverImage: '/images/covers/system-design-blueprint.png',
+            description: 'Learn high-availability patterns, distributed caching, rate limiters, payment webhooks, and event-driven architectures.',
+            highlights: [
+                'Global DNS, CDN & Multi-Tier Load Balancer Design',
+                'Redis Distributed Caching & Invalidation Patterns',
+                'Rate Limiting with Leaky Bucket & Token Bucket',
+                'Dual Payment Gateways (Stripe, VISA, PayPal)',
+                'Idempotent Webhook Processing & Async Retries',
+                'Kafka & RabbitMQ Event Streaming at Scale'
+            ],
+            modules: [
+                {
+                    number: '01',
+                    title: 'High Availability Patterns',
+                    topics: ['Global DNS routing & CDN edge static content caching', 'Multi-tier load balancers with active health checks', 'Horizontal web server scaling & stateless sessions']
+                },
+                {
+                    number: '02',
+                    title: 'Distributed Caching',
+                    topics: ['Redis distributed cache-aside & write-through strategies', 'Cache invalidation, TTL management & stampede protection', 'High-speed session storage & in-memory counters']
+                },
+                {
+                    number: '03',
+                    title: 'Database Scaling & Replication',
+                    topics: ['Primary DB (Write) & Replica DB (Read) synchronization', 'Database connection pooling & statement tuning', 'Horizontal sharded database clusters for petabyte scale']
+                },
+                {
+                    number: '04',
+                    title: 'Rate Limiters & API Gateway',
+                    topics: ['Token Bucket, Leaky Bucket & Sliding Window algorithms', 'Distributed rate limiting with Redis atomic operations', 'DDoS defense & client IP throttling']
+                },
+                {
+                    number: '05',
+                    title: 'Payment Gateways & Webhooks',
+                    topics: ['Dual payment routing (Stripe Visa/Mastercard & PayPal)', 'Asynchronous payment webhooks with cryptographic verification', 'Idempotency keys & exponential backoff retries']
+                },
+                {
+                    number: '06',
+                    title: 'Event-Driven Architectures',
+                    topics: ['Decoupled message queues with Kafka & RabbitMQ', 'Real-time event streaming for checkout & order ledgers', 'Dead-letter queues (DLQ) & event ordering guarantees']
+                }
+            ],
+            specs: {
+                pages: '480 Pages',
+                format: 'PDF + ePub + Architecture Blueprints',
+                edition: '2026 Interview Edition',
+                level: 'All Engineering Levels'
+            }
         },
         {
             id: 'book-3',
             title: 'High-Performance Java & Concurrency Mastery',
             category: 'BACKEND',
-            author: 'JVM Internal Engineering',
+            categoryName: 'JVM Internal Engineering',
+            author: 'Low-Latency & Virtual Thread Engineering in Java 21+',
             priceUsd: 0.09,
             rating: '4.8 (76 reviews)',
             badge: 'new',
             badgeText: 'NEW',
             icon: '⚡',
-            description: 'Unlock virtual threads, lock-free data structures, memory profiling, and low-latency financial systems in Java 21+.'
+            coverImage: '/images/covers/java-concurrency.jpg',
+            description: 'Unlock virtual threads, lock-free data structures, memory profiling, and low-latency financial systems in Java 21+.',
+            highlights: [
+                'Virtual Thread Basics, Thread Pinning & Tuning',
+                'Structured Concurrency & Scoped Values in Java 21+',
+                'Atomic & CAS Lock-Free Data Structures',
+                'Memory Profiling with VisualVM & Java Flight Recorder',
+                'Garbage Collector Tuning: ZGC, Shenandoah & G1',
+                'Low-Latency LMAX Disruptor Financial Pattern'
+            ],
+            modules: [
+                {
+                    number: '01',
+                    title: 'Virtual Threads (Project Loom)',
+                    topics: ['Virtual thread basics & lightweight M:N scheduling', 'Thread pinning detection & carrier thread tuning', 'Structured concurrency & Scoped Values in Java 21+']
+                },
+                {
+                    number: '02',
+                    title: 'Lock-Free Data Structures',
+                    topics: ['Atomic variables, Memory Barriers & Compare-And-Swap (CAS)', 'Concurrent collections internals & cache contention', 'Lock-free single-producer single-consumer queues & stacks']
+                },
+                {
+                    number: '03',
+                    title: 'Memory Profiling & GC Tuning',
+                    topics: ['VisualVM & Java Flight Recorder (JFR) live telemetry', 'Heap dump analysis & sub-heap memory leak triage', 'Garbage collector optimization: ZGC, Shenandoah & G1']
+                },
+                {
+                    number: '04',
+                    title: 'Low-Latency Financial Systems',
+                    topics: ['Non-blocking asynchronous I/O (Java NIO)', 'Event-driven ring buffer & LMAX Disruptor pattern', 'Sub-millisecond latency SLAs for order matching engines']
+                },
+                {
+                    number: '05',
+                    title: 'Modern Java 21+ Features',
+                    topics: ['Pattern matching for switch & exhaustive record patterns', 'Sealed interfaces & mathematical domain models', 'Foreign Function & Memory API (FFM) for off-heap access']
+                }
+            ],
+            specs: {
+                pages: '440 Pages',
+                format: 'PDF + ePub + Benchmark Suites',
+                edition: '2026 Java 21+ Edition',
+                level: 'Advanced Engineers'
+            }
         },
         {
             id: 'book-4',
             title: 'Kubernetes & Docker Production Guide',
             category: 'CLOUD',
-            author: 'DevOps & GitOps In Practice',
+            categoryName: 'DevOps & GitOps In Practice',
+            author: 'Multi-Cluster Orchestration & Production Pipelines',
             priceUsd: 0.06,
             rating: '4.9 (83 reviews)',
             badge: 'hot',
             badgeText: 'HOT',
             icon: '🐳',
-            description: 'From local containerization to multi-cluster orchestration, Helm charts, CI/CD pipelines, and zero-downtime rolling deploys.'
+            coverImage: '/images/covers/kubernetes-docker.jpg',
+            description: 'From local containerization to multi-cluster orchestration, Helm charts, CI/CD pipelines, and zero-downtime rolling deploys.',
+            highlights: [
+                'Production Containerization & Distroless Hardening',
+                'Helm Chart Templating & Dependency Management',
+                'Automated CI/CD Pipelines & Image Security Scans',
+                'Zero-Downtime Rolling & Blue-Green Deployments',
+                'GitOps Continuous Delivery with ArgoCD',
+                'Multi-Cluster High Availability & Ingress Rules'
+            ],
+            modules: [
+                {
+                    number: '01',
+                    title: 'Local Containerization',
+                    topics: ['Multi-stage Docker builds for minimal image size', 'Distroless & Alpine base image security hardening', 'Non-root execution & Linux kernel capability stripping']
+                },
+                {
+                    number: '02',
+                    title: 'Production Helm Charts',
+                    topics: ['Helm chart templating, values overrides & secrets injection', 'Release versioning, chart repositories & lifecycle hooks', 'Chart dependency management & sub-charts']
+                },
+                {
+                    number: '03',
+                    title: 'CI/CD Automation Pipelines',
+                    topics: ['Automated unit, integration & vulnerability scans (Trivy)', 'Secure container image signing with Cosign', 'Automated artifact publishing to private container registries']
+                },
+                {
+                    number: '04',
+                    title: 'Zero-Downtime Rolling Deploys',
+                    topics: ['Rolling updates, canary releases & blue-green switching', 'Kubernetes liveness, readiness & startup probes', 'Pod disruption budgets & graceful shutdown signal handling']
+                },
+                {
+                    number: '05',
+                    title: 'GitOps & Multi-Cluster Orchestration',
+                    topics: ['GitOps continuous delivery with ArgoCD sync triggers', 'Multi-cluster orchestration (Cluster 1, Cluster 2, Cluster 3)', 'Automated cluster drift detection & self-healing manifests']
+                }
+            ],
+            specs: {
+                pages: '410 Pages',
+                format: 'PDF + ePub + Helm & K8s Manifests',
+                edition: '2026 Cloud-Native Edition',
+                level: 'Intermediate to Advanced'
+            }
         },
         {
             id: 'book-5',
             title: 'PostgreSQL & Database Tuning Handbook',
             category: 'BACKEND',
-            author: 'High Volume Data Engineering',
+            categoryName: 'High Volume Data Engineering',
+            author: 'Mastering ACID, Partitioning & Query Execution Plans',
             priceUsd: 0.05,
             rating: '4.7 (65 reviews)',
             badge: 'new',
             badgeText: 'NEW',
             icon: '🐘',
-            description: 'Master indexing strategies, ACID transaction isolation, foreign keys, partition tables, and query execution plans.'
+            coverImage: '/images/covers/postgresql-tuning.jpg',
+            description: 'Master indexing strategies, ACID transaction isolation, foreign keys, partition tables, and query execution plans.',
+            highlights: [
+                'Indexing Deep Dive: B-Tree, Hash, GIN, GiST, BRIN',
+                'ACID Isolation: Read Committed to Serializable',
+                'Referential Integrity & Cascading Foreign Keys',
+                'High Volume Table Partitioning (Range, List, Hash)',
+                'Query Execution Plans & EXPLAIN ANALYZE Optimization',
+                'Parallel Seq Scans & WAL Checkpoint Tuning'
+            ],
+            modules: [
+                {
+                    number: '01',
+                    title: 'Advanced Indexing Strategies',
+                    topics: ['B-Tree, Hash, GIN, GiST & BRIN index internals', 'Covering indexes & partial indexes for high-frequency queries', 'Index bloat detection & zero-downtime REINDEX CONCURRENTLY']
+                },
+                {
+                    number: '02',
+                    title: 'ACID Transaction Isolation',
+                    topics: ['Read Committed, Repeatable Read & Serializable isolation', 'Multi-Version Concurrency Control (MVCC) & vacuum tuning', 'Deadlock detection, transaction serialization anomalies & locks']
+                },
+                {
+                    number: '03',
+                    title: 'Foreign Keys & Referential Integrity',
+                    topics: ['Cascading delete & update performance implications', 'Foreign key indexing to prevent full table share locks', 'Deferred constraint verification in bulk transactions']
+                },
+                {
+                    number: '04',
+                    title: 'High Volume Partition Tables',
+                    topics: ['Declarative Range, List & Hash table partitioning', 'Partition pruning & query execution speedups', 'Automated partition creation for time-series order histories']
+                },
+                {
+                    number: '05',
+                    title: 'Query Execution Plans & EXPLAIN ANALYZE',
+                    topics: ['Reading EXPLAIN ANALYZE cost, buffers & actual time', 'Join strategies: Nested Loop, Hash Join & Merge Join', 'Parallel sequential scans, shared memory & WAL checkpoint tuning']
+                }
+            ],
+            specs: {
+                pages: '390 Pages',
+                format: 'PDF + ePub + SQL Migration Scripts',
+                edition: '2026 Database Edition',
+                level: 'Backend Engineers & DBAs'
+            }
         },
         {
             id: 'book-6',
             title: 'Full-Stack Modern Web & Payment Architecture',
             category: 'ARCHITECTURE',
-            author: 'E-Commerce Engineering Series',
+            categoryName: 'E-Commerce Engineering Series',
+            author: 'Resilient Next.js, Stripe, KHQR & Order Ledgers',
             priceUsd: 0.07,
             rating: '4.9 (112 reviews)',
             badge: 'bestseller',
             badgeText: 'POPULAR',
             icon: '🌐',
-            description: 'Build end-to-end resilient e-commerce stores with dual Stripe and KHQR gateways, Webhooks, and order ledgers.'
+            coverImage: '/images/covers/fullstack-payment.jpg',
+            description: 'Build end-to-end resilient e-commerce stores with dual Stripe and KHQR gateways, Webhooks, and order ledgers.',
+            highlights: [
+                'Dual Gateways: Stripe (Cards/Wallets) & KHQR Bakong',
+                'Real-Time Asynchronous & Idempotent Webhook Processing',
+                'Immutable Financial Order Ledgers & Tax Invoices',
+                'Next.js 15, NestJS & PostgreSQL Micro-Architecture',
+                'Redis Cache Layering & Circuit Breaker Fault Tolerance',
+                'Production CI/CD, Automated Deploys & Observability'
+            ],
+            modules: [
+                {
+                    number: '01',
+                    title: 'E-Commerce Platform Core',
+                    topics: ['Product catalog, shopping cart state & checkout flow', 'Modern responsive frontend with React & Next.js 15', 'User session management & security headers']
+                },
+                {
+                    number: '02',
+                    title: 'Dual Payment Gateways',
+                    topics: ['Stripe payment gateway for Visa, Mastercard, Apple & Google Pay', 'Cambodian KHQR Bakong integration with live currency conversion', 'Multi-currency settlement between USD and KHR']
+                },
+                {
+                    number: '03',
+                    title: 'Real-Time Webhooks Processing',
+                    topics: ['Idempotent webhook listener for order, payment & refund events', 'Cryptographic signature verification & anti-tampering', 'Automatic retry queues & dead-letter tracking']
+                },
+                {
+                    number: '04',
+                    title: 'Immutable Order Ledger & Invoicing',
+                    topics: ['Double-entry financial ledger records in PostgreSQL', 'Instant official PDF tax invoices & receipts download', 'Audit logs for payment reconciliation & dispute resolution']
+                },
+                {
+                    number: '05',
+                    title: 'Resilient Micro-Architecture',
+                    topics: ['Node.js / NestJS backend with Redis distributed caching', 'Asynchronous message queues with RabbitMQ & AWS SQS', 'Circuit breakers & failover observability']
+                },
+                {
+                    number: '06',
+                    title: 'CI/CD & Production DevOps',
+                    topics: ['Automated deployment pipelines with Docker containerization', 'Real-time telemetry, structured logging & error monitoring', 'Zero-downtime rolling deploys & high-availability hosting']
+                }
+            ],
+            specs: {
+                pages: '460 Pages',
+                format: 'PDF + ePub + Full-Stack Starter Kit',
+                edition: '2026 E-Commerce Edition',
+                level: 'Full-Stack Developers'
+            }
         }
     ];
 
@@ -96,7 +364,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Refresh prices from PRODUCTS
             cart.forEach(item => {
                 const prod = PRODUCTS.find(p => p.id === item.id);
-                if (prod) item.priceUsd = prod.priceUsd;
+                if (prod) {
+                    item.priceUsd = prod.priceUsd;
+                    item.coverImage = prod.coverImage;
+                    item.icon = prod.icon;
+                }
             });
         }
     } catch (e) {
@@ -164,6 +436,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSimulateKhqrScan = document.getElementById('btnSimulateKhqrScan');
     let khqrTimerInterval = null;
 
+    // Product Details Modal Elements
+    const productDetailsModal = document.getElementById('productDetailsModal');
+    const btnCloseDetailsModal = document.getElementById('btnCloseDetailsModal');
+    const detailModalCover = document.getElementById('detailModalCover');
+    const detailModalBadge = document.getElementById('detailModalBadge');
+    const detailModalRating = document.getElementById('detailModalRating');
+    const detailModalCategory = document.getElementById('detailModalCategory');
+    const detailModalTitle = document.getElementById('detailModalTitle');
+    const detailModalAuthor = document.getElementById('detailModalAuthor');
+    const detailModalDesc = document.getElementById('detailModalDesc');
+    const detailModalTopics = document.getElementById('detailModalTopics');
+    const detailModalSpecs = document.getElementById('detailModalSpecs');
+    const detailModalPricePrimary = document.getElementById('detailModalPricePrimary');
+    const detailModalPriceSecondary = document.getElementById('detailModalPriceSecondary');
+    const btnDetailAddToCart = document.getElementById('btnDetailAddToCart');
+    const btnDetailBuyNow = document.getElementById('btnDetailBuyNow');
+    let currentDetailProductId = null;
+
     // ========================================================
     // 3. CURRENCY FORMATTING & LIVE CONVERSION (Task 3.3)
     // ========================================================
@@ -196,6 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProducts();
         renderCart();
         updateCheckoutSummary();
+        updateModalPriceDisplay();
     }
 
     btnCurrUSD.addEventListener('click', () => setCurrency('USD'));
@@ -219,15 +510,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? formatCurrency(product.priceUsd, 'KHR') 
                 : formatCurrency(product.priceUsd, 'USD');
 
+            const coverContent = product.coverImage
+                ? `<img src="${product.coverImage}" alt="${product.title}" class="product-cover-img" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'product-cover-art\\'>${product.icon}</div>';" />`
+                : `<div class="product-cover-art">${product.icon}</div>`;
+
             card.innerHTML = `
                 <div class="product-badge-wrap">
                     <span class="badge-tag ${product.badge}">${product.badgeText}</span>
                     <span class="product-rating">★ ${product.rating}</span>
                 </div>
-                <div class="product-cover-box">
-                    <div class="product-cover-art">${product.icon}</div>
+                <div class="product-cover-box" data-id="${product.id}" title="Click to view full syllabus & details">
+                    ${coverContent}
+                    <div class="cover-hover-hint"><span>🔍</span> View Details</div>
                 </div>
-                <h3 class="product-title">${product.title}</h3>
+                <h3 class="product-title" data-id="${product.id}" style="cursor: pointer;" title="Click to view details">${product.title}</h3>
                 <div class="product-meta">${product.author}</div>
                 <p class="product-desc">${product.description}</p>
                 <div class="product-card-footer">
@@ -235,11 +531,25 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="price-primary">${primaryPrice}</span>
                         <span class="price-secondary">${secondaryPrice}</span>
                     </div>
-                    <button type="button" class="btn-add-to-cart" data-id="${product.id}">
-                        <span>🛒</span> Add to Cart
-                    </button>
+                    <div class="product-btn-group">
+                        <button type="button" class="btn-view-details" data-id="${product.id}" title="View details and syllabus">
+                            <span>ℹ️</span> Details
+                        </button>
+                        <button type="button" class="btn-add-to-cart" data-id="${product.id}">
+                            <span>🛒</span> Add
+                        </button>
+                    </div>
                 </div>
             `;
+
+            const coverBox = card.querySelector('.product-cover-box');
+            coverBox.addEventListener('click', () => openProductDetailsModal(product.id));
+
+            const titleEl = card.querySelector('.product-title');
+            titleEl.addEventListener('click', () => openProductDetailsModal(product.id));
+
+            const detailsBtn = card.querySelector('.btn-view-details');
+            detailsBtn.addEventListener('click', () => openProductDetailsModal(product.id));
 
             const addBtn = card.querySelector('.btn-add-to-cart');
             addBtn.addEventListener('click', () => {
@@ -248,7 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 addBtn.innerHTML = '<span>✓</span> Added';
                 setTimeout(() => {
                     addBtn.classList.remove('added');
-                    addBtn.innerHTML = '<span>🛒</span> Add to Cart';
+                    addBtn.innerHTML = '<span>🛒</span> Add';
                 }, 1200);
             });
 
@@ -296,6 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: product.title,
                 priceUsd: product.priceUsd,
                 icon: product.icon,
+                coverImage: product.coverImage,
                 quantity: 1
             });
         }
@@ -343,10 +654,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemTotalUsd = item.priceUsd * item.quantity;
             totalUsd += itemTotalUsd;
 
+            const thumbContent = item.coverImage
+                ? `<img src="${item.coverImage}" alt="${item.title}" class="cart-item-img" />`
+                : item.icon;
+
             const row = document.createElement('div');
             row.className = 'cart-item-row';
             row.innerHTML = `
-                <div class="cart-item-thumb">${item.icon}</div>
+                <div class="cart-item-thumb">${thumbContent}</div>
                 <div class="cart-item-details">
                     <div class="cart-item-title">${item.title}</div>
                     <div class="cart-item-unit-price">${formatCurrency(item.priceUsd)} each</div>
@@ -772,6 +1087,158 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 400);
         }, 3500);
     }
+
+    // ========================================================
+    // 10. PRODUCT DETAILS MODAL LOGIC
+    // ========================================================
+    function openProductDetailsModal(productId) {
+        const product = PRODUCTS.find(p => p.id === productId);
+        if (!product || !productDetailsModal) return;
+
+        currentDetailProductId = productId;
+
+        if (detailModalCover) {
+            detailModalCover.src = product.coverImage || '';
+            detailModalCover.alt = product.title;
+        }
+        if (detailModalBadge) {
+            detailModalBadge.className = `badge-tag ${product.badge}`;
+            detailModalBadge.textContent = product.badgeText;
+        }
+        if (detailModalRating) {
+            detailModalRating.textContent = `★ ${product.rating}`;
+        }
+        if (detailModalCategory) {
+            detailModalCategory.textContent = product.categoryName || product.category;
+        }
+        if (detailModalTitle) {
+            detailModalTitle.textContent = product.title;
+        }
+        if (detailModalAuthor) {
+            detailModalAuthor.textContent = product.author;
+        }
+        if (detailModalDesc) {
+            detailModalDesc.textContent = product.description;
+        }
+
+        // Populate topics / modules
+        if (detailModalTopics) {
+            if (product.modules && product.modules.length > 0) {
+                detailModalTopics.innerHTML = product.modules.map(mod => `
+                    <div class="module-card">
+                        <div class="module-card-header">
+                            <span class="module-badge">MODULE ${mod.number}</span>
+                            <h4 class="module-title">${mod.title}</h4>
+                        </div>
+                        <ul class="module-topics-list">
+                            ${mod.topics.map(t => `
+                                <li>
+                                    <span class="module-topic-icon">✓</span>
+                                    <span>${t}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `).join('');
+            } else {
+                detailModalTopics.innerHTML = (product.highlights || []).map(topic => `
+                    <div class="topic-chip">
+                        <span class="topic-check">✓</span>
+                        <span>${topic}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Populate specs
+        if (detailModalSpecs && product.specs) {
+            detailModalSpecs.innerHTML = `
+                <div class="spec-pill">
+                    <span class="spec-label">Pages</span>
+                    <span class="spec-value">${product.specs.pages}</span>
+                </div>
+                <div class="spec-pill">
+                    <span class="spec-label">Format</span>
+                    <span class="spec-value">${product.specs.format}</span>
+                </div>
+                <div class="spec-pill">
+                    <span class="spec-label">Edition</span>
+                    <span class="spec-value">${product.specs.edition}</span>
+                </div>
+                <div class="spec-pill">
+                    <span class="spec-label">Level</span>
+                    <span class="spec-value">${product.specs.level}</span>
+                </div>
+            `;
+        }
+
+        updateModalPriceDisplay(product);
+
+        productDetailsModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function updateModalPriceDisplay(product = null) {
+        if (!product && currentDetailProductId) {
+            product = PRODUCTS.find(p => p.id === currentDetailProductId);
+        }
+        if (!product) return;
+
+        if (detailModalPricePrimary) {
+            detailModalPricePrimary.textContent = formatCurrency(product.priceUsd, currentCurrency);
+        }
+        if (detailModalPriceSecondary) {
+            const secCurrency = currentCurrency === 'USD' ? 'KHR' : 'USD';
+            detailModalPriceSecondary.textContent = `≈ ${formatCurrency(product.priceUsd, secCurrency)}`;
+        }
+    }
+
+    function closeProductDetailsModal() {
+        if (!productDetailsModal) return;
+        productDetailsModal.classList.remove('active');
+        document.body.style.overflow = '';
+        currentDetailProductId = null;
+    }
+
+    if (btnCloseDetailsModal) {
+        btnCloseDetailsModal.addEventListener('click', closeProductDetailsModal);
+    }
+
+    if (productDetailsModal) {
+        productDetailsModal.addEventListener('click', (e) => {
+            if (e.target === productDetailsModal) closeProductDetailsModal();
+        });
+    }
+
+    if (btnDetailAddToCart) {
+        btnDetailAddToCart.addEventListener('click', () => {
+            if (!currentDetailProductId) return;
+            addToCart(currentDetailProductId);
+            btnDetailAddToCart.classList.add('added');
+            btnDetailAddToCart.innerHTML = '<span>✓</span> Added to Cart!';
+            setTimeout(() => {
+                btnDetailAddToCart.classList.remove('added');
+                btnDetailAddToCart.innerHTML = '<span>🛒</span> Add to Cart';
+            }, 1200);
+        });
+    }
+
+    if (btnDetailBuyNow) {
+        btnDetailBuyNow.addEventListener('click', () => {
+            if (!currentDetailProductId) return;
+            addToCart(currentDetailProductId);
+            closeProductDetailsModal();
+            showCheckoutView();
+        });
+    }
+
+    // Keyboard ESC listener for all modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (productDetailsModal && productDetailsModal.classList.contains('active')) closeProductDetailsModal();
+            if (khqrModal && khqrModal.classList.contains('active')) closeKhqrModal();
+        }
+    });
 
     // Initialize View
     setCurrency(currentCurrency);
