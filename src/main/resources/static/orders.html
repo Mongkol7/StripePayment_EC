@@ -68,22 +68,16 @@
           type="text" 
           id="orderSearchInput" 
           class="search-input" 
-          placeholder="Enter email (e.g. customer@example.com) or order ref (ORD-...)"
-          value="customer@example.com"
-          required
+          placeholder="Search by email, customer name, or order ref (ORD-...)"
+          value=""
         >
         <button type="submit" class="btn-search-orders" id="btnSearch">
           <span>🔍</span> Search
         </button>
+        <button type="button" class="btn-preset" id="btnClearSearch" style="display: none; padding: 0.75rem 1.25rem;">
+          ✕ Clear
+        </button>
       </form>
-
-      <!-- Quick Demo Query Pills -->
-      <div class="quick-demo-queries">
-        <span>Quick lookups:</span>
-        <button type="button" class="btn-demo-chip" data-query="customer@example.com">customer@example.com</button>
-        <button type="button" class="btn-demo-chip" data-query="sopheak@domain.com">sopheak@domain.com</button>
-        <button type="button" class="btn-demo-chip" data-query="">View All Records</button>
-      </div>
 
       <!-- Status Filter Segmented Controls -->
       <div class="catalog-filter-bar" style="margin-top: 1.5rem; justify-content: flex-start;">
@@ -129,62 +123,10 @@
       const ordersList = document.getElementById('ordersList');
       const resultsCount = document.getElementById('resultsCount');
       const filterChips = document.querySelectorAll('.filter-chip');
-      const demoChips = document.querySelectorAll('.btn-demo-chip');
+      const btnClearSearch = document.getElementById('btnClearSearch');
       const btnCurrUSD = document.getElementById('btnCurrUSD');
       const btnCurrKHR = document.getElementById('btnCurrKHR');
       const toastBox = document.getElementById('toastBox');
-
-      // Sample fallback records for instant presentation and test grading
-      const DEMO_ORDERS = [
-        {
-          orderReference: 'ORD-20260918-A789B2',
-          amount: 25.00,
-          currency: 'USD',
-          status: 'COMPLETED',
-          customerName: 'Sopheak Chan',
-          customerEmail: 'customer@example.com',
-          description: 'Cloud-Native Spring Boot 3 Microservices',
-          paymentMethod: 'Stripe (Visa / Mastercard)',
-          stripeSessionId: 'cs_live_992182049182049',
-          createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
-        },
-        {
-          orderReference: 'ORD-20260918-B114K9',
-          amount: 40.00,
-          currency: 'USD',
-          status: 'COMPLETED',
-          customerName: 'Sopheak Chan',
-          customerEmail: 'customer@example.com',
-          description: 'System Design Interview Blueprint + High-Performance Java',
-          paymentMethod: 'KHQR (Bakong / ABA)',
-          stripeSessionId: 'KHQR-DOMESTIC-BAKONG-09182',
-          createdAt: new Date(Date.now() - 3600000 * 26).toISOString()
-        },
-        {
-          orderReference: 'ORD-20260917-P92031',
-          amount: 15.00,
-          currency: 'USD',
-          status: 'PENDING',
-          customerName: 'John Doe',
-          customerEmail: 'customer@example.com',
-          description: 'Kubernetes & Docker Production Guide',
-          paymentMethod: 'Stripe (Visa / Mastercard)',
-          stripeSessionId: 'cs_test_pending_session_01',
-          createdAt: new Date(Date.now() - 3600000 * 48).toISOString()
-        },
-        {
-          orderReference: 'ORD-20260916-C44102',
-          amount: 12.00,
-          currency: 'USD',
-          status: 'CANCELLED',
-          customerName: 'Dara Vann',
-          customerEmail: 'sopheak@domain.com',
-          description: 'PostgreSQL & Database Tuning Handbook',
-          paymentMethod: 'Stripe (Visa / Mastercard)',
-          stripeSessionId: 'cs_test_cancelled_01',
-          createdAt: new Date(Date.now() - 3600000 * 72).toISOString()
-        }
-      ];
 
       function formatMoney(usdAmount, currency = currentCurrency) {
         const num = parseFloat(usdAmount) || 0;
@@ -212,13 +154,15 @@
       btnCurrUSD.addEventListener('click', () => setCurrency('USD'));
       btnCurrKHR.addEventListener('click', () => setCurrency('KHR'));
 
-      // Fetch orders from API and merge with localStorage and demo data
+      // Fetch orders from API (PostgreSQL database) and merge with locally cached checkout orders
       async function fetchOrders(query = '') {
         ordersList.innerHTML = '<div style="text-align: center; padding: 2.5rem; color: var(--ios-label-secondary);">Searching orders...</div>';
 
         let backendOrders = [];
         try {
-          const endpoint = query ? `/api/v1/payments/orders/lookup?query=${encodeURIComponent(query)}` : '/api/v1/payments/orders/lookup';
+          const endpoint = (query && query.trim() !== '')
+            ? `/api/v1/payments/orders/lookup?query=${encodeURIComponent(query.trim())}`
+            : '/api/v1/payments/orders/lookup';
           const res = await fetch(endpoint);
           if (res.ok) {
             backendOrders = await res.json();
@@ -227,25 +171,32 @@
           console.warn('Could not reach backend lookup:', e);
         }
 
-        // Local storage orders (e.g. from local test checkouts or KHQR simulated payments)
+        // Local storage orders (cached from checkout completion)
         let localOrders = [];
         try {
           localOrders = JSON.parse(localStorage.getItem('stripe_ec_user_orders') || '[]');
         } catch (e) {}
 
-        // Combine all sources
-        const combinedMap = new Map();
+        // Filter out any legacy mock demo order references
+        const MOCK_REFS = new Set(['ORD-20260918-A789B2', 'ORD-20260918-B114K9', 'ORD-20260917-P92031', 'ORD-20260916-C44102']);
+        localOrders = localOrders.filter(o => o && o.orderReference && !MOCK_REFS.has(o.orderReference));
 
-        // 1. Add demo orders
-        DEMO_ORDERS.forEach(o => combinedMap.set(o.orderReference, o));
-        // 2. Add local orders
-        localOrders.forEach(o => combinedMap.set(o.orderReference, o));
-        // 3. Add backend orders (highest priority)
-        backendOrders.forEach(o => combinedMap.set(o.orderReference, o));
+        // Combine all sources - backend database orders take highest priority
+        const combinedMap = new Map();
+        localOrders.forEach(o => {
+          if (o && o.orderReference) {
+            combinedMap.set(o.orderReference, o);
+          }
+        });
+        backendOrders.forEach(o => {
+          if (o && o.orderReference) {
+            combinedMap.set(o.orderReference, o);
+          }
+        });
 
         let all = Array.from(combinedMap.values());
 
-        // Apply search query filter if provided
+        // Apply client search query filter if provided
         if (query && query.trim() !== '') {
           const q = query.trim().toLowerCase();
           all = all.filter(o => 
@@ -368,7 +319,7 @@
             </div>
             <div class="invoice-meta">
               <div class="invoice-number">INV-${order.orderReference}</div>
-              <div class="invoice-date">Date: ${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '2026-09-18'}</div>
+              <div class="invoice-date">Date: ${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</div>
               <div style="margin-top: 0.5rem;">
                 <span class="status-badge status-completed">${order.status || 'COMPLETED'}</span>
               </div>
@@ -378,7 +329,7 @@
             <div>
               <div style="font-weight: 700; color: #475569; font-size: 0.8rem;">Billed To:</div>
               <div style="font-weight: 800; font-size: 1rem; color: #0f172a;">${order.customerName || 'Valued Customer'}</div>
-              <div style="color: #64748b;">${order.customerEmail || 'customer@example.com'}</div>
+              <div style="color: #64748b;">${order.customerEmail || 'N/A'}</div>
             </div>
             <div>
               <div style="font-weight: 700; color: #475569; font-size: 0.8rem;">Payment Details:</div>
@@ -441,18 +392,24 @@
         });
       });
 
-      // Quick Demo Queries
-      demoChips.forEach(chip => {
-        chip.addEventListener('click', () => {
-          searchInput.value = chip.dataset.query;
-          fetchOrders(chip.dataset.query);
-        });
-      });
-
       // Search Form Submit
       searchForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        fetchOrders(searchInput.value);
+        fetchOrders(searchInput.value.trim());
+      });
+
+      if (btnClearSearch) {
+        btnClearSearch.addEventListener('click', () => {
+          searchInput.value = '';
+          btnClearSearch.style.display = 'none';
+          fetchOrders('');
+        });
+      }
+
+      searchInput.addEventListener('input', () => {
+        if (btnClearSearch) {
+          btnClearSearch.style.display = searchInput.value.trim() ? 'inline-flex' : 'none';
+        }
       });
 
       function showToast(msg) {
@@ -462,9 +419,15 @@
         setTimeout(() => toastBox.classList.remove('active'), 3500);
       }
 
-      // Initial Fetch
+      // Initial Fetch - read URL query or order reference if present, or load all real database records
       setCurrency(currentCurrency);
-      fetchOrders('customer@example.com');
+      const urlParams = new URLSearchParams(window.location.search);
+      const initialQuery = urlParams.get('query') || urlParams.get('order_ref') || '';
+      if (initialQuery) {
+        searchInput.value = initialQuery;
+        if (btnClearSearch) btnClearSearch.style.display = 'inline-flex';
+      }
+      fetchOrders(initialQuery);
     });
   </script>
 

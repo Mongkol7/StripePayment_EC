@@ -176,7 +176,7 @@ public class PaymentOrderService {
                                 cardLast4 = charge.getPaymentMethodDetails().getCard().getLast4();
                             }
                         }
-                    } catch (Exception ex) {
+                    } catch (StripeException ex) {
                         log.warn("Could not retrieve detailed card brand/last4 from Stripe: {}", ex.getMessage());
                     }
                 }
@@ -307,7 +307,7 @@ public class PaymentOrderService {
     }
 
     /**
-     * Searches customer orders by email, order reference, or retrieves latest orders if query is blank.
+     * Searches customer orders by email, order reference, customer name, or retrieves latest orders if query is blank.
      */
     @Transactional(readOnly = true)
     public List<OrderReceiptDto> searchOrders(String query) {
@@ -315,15 +315,7 @@ public class PaymentOrderService {
         if (query == null || query.isBlank()) {
             orders = paymentOrderRepository.findTop20ByOrderByCreatedAtDesc();
         } else {
-            String trimmed = query.trim();
-            if (trimmed.contains("@")) {
-                orders = paymentOrderRepository.findByCustomerEmailIgnoreCaseOrderByCreatedAtDesc(trimmed);
-            } else {
-                orders = paymentOrderRepository.findByOrderReferenceContainingIgnoreCaseOrderByCreatedAtDesc(trimmed);
-                if (orders.isEmpty()) {
-                    orders = paymentOrderRepository.findByCustomerEmailIgnoreCaseOrderByCreatedAtDesc(trimmed);
-                }
-            }
+            orders = paymentOrderRepository.searchByKeyword(query.trim());
         }
         return orders.stream().map(this::mapToReceiptDto).collect(Collectors.toList());
     }
