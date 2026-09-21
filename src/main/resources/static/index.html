@@ -410,6 +410,70 @@
     </div>
   </div>
 
+  <!-- ========================================================
+       APPLE CUPERTINO PRODUCT DETAILS MODAL
+       ======================================================== -->
+  <div class="modal-overlay" id="productDetailsModal">
+    <div class="modal-content product-details-modal-card">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span class="badge-tag" id="detailModalBadge">BESTSELLER</span>
+          <span class="product-rating" id="detailModalRating">★ 5.0 (128 reviews)</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseDetailsModal" aria-label="Close Details Modal">✕</button>
+      </div>
+
+      <div class="modal-body product-details-modal-body">
+        <div class="product-details-grid">
+          <!-- Left Column: High-Res Book Cover Artwork -->
+          <div class="details-cover-column">
+            <div class="details-cover-frame">
+              <img id="detailModalCover" src="" alt="Book Cover" class="details-cover-image" />
+            </div>
+            <div class="details-download-badge">
+              <span>⚡</span> Instant Digital License & Code Access
+            </div>
+            <div class="details-specs-grid" id="detailModalSpecs">
+              <!-- Dynamically populated specs -->
+            </div>
+          </div>
+
+          <!-- Right Column: Info, Syllabus Topics & Action -->
+          <div class="details-info-column">
+            <div class="details-category-pill" id="detailModalCategory">BACKEND ARCHITECTURE</div>
+            <h2 class="details-book-title" id="detailModalTitle">Book Title</h2>
+            <div class="details-book-author" id="detailModalAuthor">Author & Engineering Series</div>
+            <p class="details-book-desc" id="detailModalDesc">Detailed description...</p>
+
+            <!-- Key Syllabus / Architecture Topics -->
+            <div class="details-section-title">
+              <span>📚</span> Architecture & Engineering Modules:
+            </div>
+            <div class="details-topics-list" id="detailModalTopics">
+              <!-- Dynamically populated topic chips -->
+            </div>
+
+            <!-- Price & Action Bar -->
+            <div class="details-action-bar">
+              <div class="details-price-box">
+                <span class="price-primary" id="detailModalPricePrimary">$0.10 USD</span>
+                <span class="price-secondary" id="detailModalPriceSecondary">≈ 410 ៛ KHR</span>
+              </div>
+              <div class="details-button-group">
+                <button type="button" class="btn-detail-add-cart" id="btnDetailAddToCart">
+                  <span>🛒</span> Add to Cart
+                </button>
+                <button type="button" class="btn-detail-buy-now" id="btnDetailBuyNow">
+                  <span>⚡</span> Buy Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Apple Dynamic Island Toast Notification -->
   <div id="toastBox" class="toast-notification"></div>
 
