@@ -10,4 +10,7 @@ import java.util.Optional;
 public interface PaymentOrderRepository extends JpaRepository<PaymentOrder, Long> {
     Optional<PaymentOrder> findByOrderReference(String orderReference);
     Optional<PaymentOrder> findByStripeSessionId(String stripeSessionId);
+    java.util.List<PaymentOrder> findByCustomerEmailIgnoreCaseOrderByCreatedAtDesc(String customerEmail);
+    java.util.List<PaymentOrder> findByOrderReferenceContainingIgnoreCaseOrderByCreatedAtDesc(String orderReference);
+    java.util.List<PaymentOrder> findTop20ByOrderByCreatedAtDesc();
 }
