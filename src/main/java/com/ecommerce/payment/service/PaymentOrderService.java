@@ -90,6 +90,7 @@ public class PaymentOrderService {
     public PaymentResponseDto createOrder(PaymentRequestDto request) {
         String orderReference = generateOrderReference();
         String currencyCode = request.getCurrency() != null ? request.getCurrency().trim().toUpperCase() : "USD";
+        boolean isRecurring = Boolean.TRUE.equals(request.getIsRecurring());
 
         PaymentOrder order = PaymentOrder.builder()
                 .orderReference(orderReference)
@@ -99,15 +100,24 @@ public class PaymentOrderService {
                 .customerName(request.getCustomerName())
                 .customerEmail(request.getCustomerEmail())
                 .description(request.getDescription())
+                .paymentType(isRecurring ? "SUBSCRIPTION" : "ONE_TIME")
+                .billingInterval(isRecurring ? (request.getBillingInterval() != null ? request.getBillingInterval().toUpperCase() : "DAY") : null)
+                .subscriptionStatus(isRecurring ? "PENDING" : null)
                 .build();
 
         order = paymentOrderRepository.save(order);
-        log.info("Persisted initial PENDING order: Ref={}, Amount={} {}", orderReference, order.getAmount(), currencyCode);
+        log.info("Persisted initial PENDING order: Ref={}, Amount={} {}, Type={}", orderReference, order.getAmount(), currencyCode, order.getPaymentType());
 
         try {
             Session session = stripeService.createCheckoutSession(order, request);
             order.setStripeSessionId(session.getId());
             order.setStripePaymentIntentId(session.getPaymentIntent());
+            if (session.getSubscription() != null) {
+                order.setStripeSubscriptionId(session.getSubscription());
+            }
+            if (session.getCustomer() != null) {
+                order.setStripeCustomerId(session.getCustomer());
+            }
             paymentOrderRepository.save(order);
 
             // Record audit transaction
@@ -153,10 +163,21 @@ public class PaymentOrderService {
 
         try {
             Session session = stripeService.retrieveSession(sessionId);
-            if ("paid".equalsIgnoreCase(session.getPaymentStatus())) {
+            if ("paid".equalsIgnoreCase(session.getPaymentStatus()) || "complete".equalsIgnoreCase(session.getStatus())) {
                 transitionOrderStatus(order, PaymentStatus.COMPLETED);
                 if (session.getPaymentIntent() != null) {
                     order.setStripePaymentIntentId(session.getPaymentIntent());
+                }
+                if (session.getSubscription() != null) {
+                    order.setStripeSubscriptionId(session.getSubscription());
+                    order.setSubscriptionStatus("ACTIVE");
+                    order.setPaymentType("SUBSCRIPTION");
+                    if (order.getBillingInterval() == null) {
+                        order.setBillingInterval("DAY");
+                    }
+                }
+                if (session.getCustomer() != null) {
+                    order.setStripeCustomerId(session.getCustomer());
                 }
                 paymentOrderRepository.save(order);
 
@@ -181,12 +202,16 @@ public class PaymentOrderService {
                     }
                 }
 
+                PaymentTransactionType txType = (order.getStripeSubscriptionId() != null)
+                        ? PaymentTransactionType.SUBSCRIPTION_CREATED
+                        : PaymentTransactionType.PAYMENT_SUCCESS;
+
                 // Record audit transaction
-                recordAuditTransaction(order, PaymentTransactionType.PAYMENT_SUCCESS,
+                recordAuditTransaction(order, txType,
                         order.getAmount(), sessionId, order.getStripePaymentIntentId(), 
                         chargeId, cardBrand, cardLast4, null, null);
 
-                log.info("Order [{}] confirmed and marked COMPLETED", order.getOrderReference());
+                log.info("Order [{}] confirmed and marked COMPLETED (Type={})", order.getOrderReference(), order.getPaymentType());
             } else {
                 log.warn("Stripe session [{}] status is '{}' (not 'paid')", sessionId, session.getPaymentStatus());
             }
@@ -321,6 +346,121 @@ public class PaymentOrderService {
     }
 
 
+    /**
+     * Cancels an active daily recurring subscription.
+     */
+    @Transactional
+    public SubscriptionCancelResponseDto cancelSubscription(String orderReference) {
+        PaymentOrder order = paymentOrderRepository.findByOrderReference(orderReference)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with reference: " + orderReference));
+
+        if (!"SUBSCRIPTION".equalsIgnoreCase(order.getPaymentType()) || order.getStripeSubscriptionId() == null) {
+            throw new InvalidOrderStateException("Order " + orderReference + " is not an active recurring subscription");
+        }
+
+        try {
+            stripeService.cancelSubscription(order.getStripeSubscriptionId());
+            order.setSubscriptionStatus("CANCELLED");
+            paymentOrderRepository.save(order);
+
+            // Record transaction
+            PaymentTransaction transaction = PaymentTransaction.builder()
+                    .orderReference(order.getOrderReference())
+                    .paymentOrder(order)
+                    .transactionType(PaymentTransactionType.SUBSCRIPTION_CANCELLED)
+                    .amount(order.getAmount())
+                    .currency(order.getCurrency())
+                    .stripeSubscriptionId(order.getStripeSubscriptionId())
+                    .rawPayload("Subscription cancelled by customer/admin")
+                    .build();
+            paymentTransactionRepository.save(transaction);
+
+            log.info("Subscription [{}] for order [{}] successfully cancelled", order.getStripeSubscriptionId(), orderReference);
+            return SubscriptionCancelResponseDto.builder()
+                    .orderReference(orderReference)
+                    .stripeSubscriptionId(order.getStripeSubscriptionId())
+                    .subscriptionStatus("CANCELLED")
+                    .message("Daily subscription cancelled successfully. No further daily charges will be made.")
+                    .build();
+        } catch (StripeException e) {
+            log.error("Failed to cancel Stripe subscription: {}", order.getStripeSubscriptionId(), e);
+            throw new RuntimeException("Failed to cancel subscription: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Handles automated daily deduction webhook (invoice.paid).
+     */
+    @Transactional
+    public void handleInvoicePaid(String subscriptionId, BigDecimal amount, String currency, String invoiceId, String chargeId) {
+        if (subscriptionId == null || subscriptionId.isBlank()) {
+            return;
+        }
+
+        paymentOrderRepository.findByStripeSubscriptionId(subscriptionId).ifPresent(order -> {
+            order.setSubscriptionStatus("ACTIVE");
+            paymentOrderRepository.save(order);
+
+            PaymentTransaction renewalTx = PaymentTransaction.builder()
+                    .orderReference(order.getOrderReference())
+                    .paymentOrder(order)
+                    .transactionType(PaymentTransactionType.SUBSCRIPTION_RENEWED)
+                    .amount(amount != null ? amount : order.getAmount())
+                    .currency(currency != null ? currency.toUpperCase() : order.getCurrency())
+                    .stripeSubscriptionId(subscriptionId)
+                    .stripeInvoiceId(invoiceId)
+                    .stripeChargeId(chargeId)
+                    .rawPayload("Daily recurring subscription renewal charged successfully: Invoice " + invoiceId)
+                    .build();
+            paymentTransactionRepository.save(renewalTx);
+            log.info("Daily subscription renewal recorded for order [{}] and subscription [{}]: Invoice={}", 
+                    order.getOrderReference(), subscriptionId, invoiceId);
+        });
+    }
+
+    /**
+     * Handles daily deduction failure webhook (invoice.payment_failed).
+     */
+    @Transactional
+    public void handleInvoicePaymentFailed(String subscriptionId, String invoiceId, String failureMessage) {
+        if (subscriptionId == null || subscriptionId.isBlank()) {
+            return;
+        }
+
+        paymentOrderRepository.findByStripeSubscriptionId(subscriptionId).ifPresent(order -> {
+            order.setSubscriptionStatus("PAST_DUE");
+            paymentOrderRepository.save(order);
+
+            PaymentTransaction failedTx = PaymentTransaction.builder()
+                    .orderReference(order.getOrderReference())
+                    .paymentOrder(order)
+                    .transactionType(PaymentTransactionType.PAYMENT_FAILED)
+                    .amount(order.getAmount())
+                    .currency(order.getCurrency())
+                    .stripeSubscriptionId(subscriptionId)
+                    .stripeInvoiceId(invoiceId)
+                    .failureMessage(failureMessage)
+                    .rawPayload("Daily recurring subscription renewal failed: " + failureMessage)
+                    .build();
+            paymentTransactionRepository.save(failedTx);
+            log.warn("Daily subscription renewal failed for order [{}] and subscription [{}]: Invoice={}", 
+                    order.getOrderReference(), subscriptionId, invoiceId);
+        });
+    }
+
+    /**
+     * Handles subscription deletion/cancellation from Stripe.
+     */
+    @Transactional
+    public void handleSubscriptionDeleted(String subscriptionId) {
+        if (subscriptionId == null || subscriptionId.isBlank()) return;
+        paymentOrderRepository.findByStripeSubscriptionId(subscriptionId).ifPresent(order -> {
+            order.setSubscriptionStatus("CANCELLED");
+            paymentOrderRepository.save(order);
+            log.info("Subscription [{}] marked as CANCELLED via webhook for order [{}]", subscriptionId, order.getOrderReference());
+        });
+    }
+
     private void recordAuditTransaction(PaymentOrder order, PaymentTransactionType type,
                                          BigDecimal amount, String sessionId, String paymentIntentId,
                                          String chargeId, String cardBrand, String cardLast4,
@@ -332,6 +472,7 @@ public class PaymentOrderService {
                 .amount(amount)
                 .currency(order.getCurrency())
                 .stripePaymentIntentId(paymentIntentId)
+                .stripeSubscriptionId(order.getStripeSubscriptionId())
                 .stripeChargeId(chargeId)
                 .paymentMethodType("card")
                 .cardBrand(cardBrand)
@@ -354,6 +495,11 @@ public class PaymentOrderService {
                 .description(order.getDescription())
                 .stripeSessionId(order.getStripeSessionId())
                 .stripePaymentIntentId(order.getStripePaymentIntentId())
+                .paymentType(order.getPaymentType())
+                .billingInterval(order.getBillingInterval())
+                .stripeCustomerId(order.getStripeCustomerId())
+                .stripeSubscriptionId(order.getStripeSubscriptionId())
+                .subscriptionStatus(order.getSubscriptionStatus())
                 .createdAt(order.getCreatedAt())
                 .build();
     }
@@ -368,6 +514,8 @@ public class PaymentOrderService {
                 .stripeChargeId(tx.getStripeChargeId())
                 .stripePaymentIntentId(tx.getStripePaymentIntentId())
                 .stripeRefundId(tx.getStripeRefundId())
+                .stripeSubscriptionId(tx.getStripeSubscriptionId())
+                .stripeInvoiceId(tx.getStripeInvoiceId())
                 .paymentMethodType(tx.getPaymentMethodType())
                 .cardBrand(tx.getCardBrand())
                 .cardLast4(tx.getCardLast4())

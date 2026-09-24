@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
             category: 'BACKEND',
             categoryName: 'Spring Boot 3 & Cloud Architecture',
             author: 'Design, Build & Deploy Resilient Distributed Systems on Kubernetes',
-            priceUsd: 0.10,
+            priceUsd: 29.00,
             rating: '5.0 (128 reviews)',
             badge: 'bestseller',
             badgeText: 'BESTSELLER',
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             category: 'ARCHITECTURE',
             categoryName: 'Enterprise Scale Architectures',
             author: 'Mastering Modern High-Availability Architectures',
-            priceUsd: 0.08,
+            priceUsd: 25.00,
             rating: '4.9 (94 reviews)',
             badge: 'hot',
             badgeText: 'HOT',
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
             category: 'BACKEND',
             categoryName: 'JVM Internal Engineering',
             author: 'Low-Latency & Virtual Thread Engineering in Java 21+',
-            priceUsd: 0.09,
+            priceUsd: 19.50,
             rating: '4.8 (76 reviews)',
             badge: 'new',
             badgeText: 'NEW',
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             category: 'CLOUD',
             categoryName: 'DevOps & GitOps In Practice',
             author: 'Multi-Cluster Orchestration & Production Pipelines',
-            priceUsd: 0.06,
+            priceUsd: 14.50,
             rating: '4.9 (83 reviews)',
             badge: 'hot',
             badgeText: 'HOT',
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
             category: 'BACKEND',
             categoryName: 'High Volume Data Engineering',
             author: 'Mastering ACID, Partitioning & Query Execution Plans',
-            priceUsd: 0.05,
+            priceUsd: 11.00,
             rating: '4.7 (65 reviews)',
             badge: 'new',
             badgeText: 'NEW',
@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
             category: 'ARCHITECTURE',
             categoryName: 'E-Commerce Engineering Series',
             author: 'Resilient Next.js, Stripe, KHQR & Order Ledgers',
-            priceUsd: 0.07,
+            priceUsd: 22.00,
             rating: '4.9 (112 reviews)',
             badge: 'bestseller',
             badgeText: 'POPULAR',
@@ -352,6 +352,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 edition: '2026 E-Commerce Edition',
                 level: 'Full-Stack Developers'
             }
+        },
+        {
+            id: 'plan-daily-vip',
+            title: 'VIP Engineering Daily Pass (All-Access)',
+            category: 'SUBSCRIPTION',
+            categoryName: 'Daily Recurring Membership',
+            author: 'Continuous 24-Hour Access to Full Architecture & Code Library',
+            priceUsd: 0.99,
+            rating: '5.0 (Unlimited)',
+            badge: 'bestseller',
+            badgeText: 'RECURRING',
+            icon: '🔁',
+            coverImage: '/images/covers/daily-vip-pass.jpg',
+            description: 'Unlimited access to all 6 technical e-books, full-stack source code, and architecture blueprints. Automatically renews daily at $0.99/day. Cancel anytime.',
+            highlights: [
+                'Instant Access to All 6 Full E-Books and Guides',
+                'Full GitHub Source Repositories & Docker Stacks',
+                'Continuous 24-Hour Automatic Renewal ($0.99/day)',
+                'Instant 1-Click Cancellation Anytime in Orders Portal'
+            ],
+            modules: [
+                {
+                    number: 'VIP',
+                    title: 'Full Engineering Access Pass',
+                    topics: [
+                        'All-inclusive reading rights to entire technical catalog',
+                        'Automated daily billing ($0.99 USD every 24 hours via Stripe)',
+                        'Self-service 1-click cancellation directly from Orders dashboard'
+                    ]
+                }
+            ],
+            specs: {
+                pages: 'All Books Included',
+                format: 'Digital Pass + GitHub Sync',
+                edition: 'Continuous Daily Access',
+                level: 'All Levels'
+            },
+            isSubscription: true
         }
     ];
 
@@ -414,7 +452,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const summaryKhrEquivalent = document.getElementById('summaryKhrEquivalent');
     const payButton = document.getElementById('payButton');
     const buttonSpinner = document.getElementById('buttonSpinner');
+    const buttonText = document.getElementById('buttonText');
     const toastBox = document.getElementById('toastBox');
+
+    // Recurring Subscription Mode Elements
+    const btnModeOneTime = document.getElementById('btnModeOneTime');
+    const btnModeDaily = document.getElementById('btnModeDaily');
+    const dailySubscriptionNotice = document.getElementById('dailySubscriptionNotice');
+    let selectedPaymentPlan = 'ONE_TIME'; // 'ONE_TIME' or 'SUBSCRIPTION'
 
     // Dedicated Views Elements (Catalog vs Checkout Portal)
     const catalogView = document.getElementById('catalogView');
@@ -782,13 +827,82 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `).join('');
 
-        const totalUsd = cart.reduce((sum, i) => sum + (i.priceUsd * i.quantity), 0);
-        amountInput.value = totalUsd.toFixed(2);
-
-        const descInput = document.getElementById('description');
-        if (descInput) {
-            descInput.value = cart.map(i => `${i.title} (x${i.quantity})`).join(', ');
+        const hasDailyVip = cart.some(i => i.id === 'plan-daily-vip');
+        if (hasDailyVip && cart.length === 1) {
+            setPaymentPlan('SUBSCRIPTION');
+        } else if (selectedPaymentPlan === 'ONE_TIME') {
+            const totalUsd = cart.reduce((sum, i) => sum + (i.priceUsd * i.quantity), 0);
+            amountInput.value = totalUsd.toFixed(2);
+            const descInput = document.getElementById('description');
+            if (descInput) {
+                descInput.value = cart.map(i => `${i.title} (x${i.quantity})`).join(', ');
+            }
         }
+    }
+
+    // ========================================================
+    // RECURRING PAYMENT PLAN SWITCHER (Daily vs One-Time)
+    // ========================================================
+    function setPaymentPlan(plan) {
+        selectedPaymentPlan = plan;
+        if (plan === 'SUBSCRIPTION') {
+            if (btnModeDaily) {
+                btnModeDaily.classList.add('active');
+                btnModeDaily.style.background = 'var(--ios-blue)';
+                btnModeDaily.style.color = '#fff';
+                btnModeDaily.style.borderColor = 'transparent';
+            }
+            if (btnModeOneTime) {
+                btnModeOneTime.classList.remove('active');
+                btnModeOneTime.style.background = 'transparent';
+                btnModeOneTime.style.color = 'var(--ios-label-secondary)';
+                btnModeOneTime.style.borderColor = 'rgba(255,255,255,0.1)';
+            }
+            if (dailySubscriptionNotice) {
+                dailySubscriptionNotice.style.display = 'flex';
+            }
+            if (amountInput) {
+                amountInput.value = '0.99';
+                amountInput.disabled = true;
+            }
+            const descInput = document.getElementById('description');
+            if (descInput) {
+                descInput.value = 'VIP Engineering Daily Pass ($0.99/day recurring)';
+            }
+        } else {
+            if (btnModeOneTime) {
+                btnModeOneTime.classList.add('active');
+                btnModeOneTime.style.background = 'var(--ios-blue)';
+                btnModeOneTime.style.color = '#fff';
+                btnModeOneTime.style.borderColor = 'transparent';
+            }
+            if (btnModeDaily) {
+                btnModeDaily.classList.remove('active');
+                btnModeDaily.style.background = 'transparent';
+                btnModeDaily.style.color = 'var(--ios-label-secondary)';
+                btnModeDaily.style.borderColor = 'rgba(255,255,255,0.1)';
+            }
+            if (dailySubscriptionNotice) {
+                dailySubscriptionNotice.style.display = 'none';
+            }
+            if (amountInput) {
+                amountInput.disabled = false;
+                const total = cart.reduce((sum, item) => sum + (item.priceUsd * item.quantity), 0);
+                amountInput.value = total > 0 ? total.toFixed(2) : '29.00';
+            }
+            const descInput = document.getElementById('description');
+            if (descInput) {
+                descInput.value = cart.length > 0 ? cart.map(i => `${i.title} (x${i.quantity})`).join(', ') : 'Developer Books & Software Purchase';
+            }
+        }
+        updateCheckoutSummary();
+    }
+
+    if (btnModeOneTime) {
+        btnModeOneTime.addEventListener('click', () => setPaymentPlan('ONE_TIME'));
+    }
+    if (btnModeDaily) {
+        btnModeDaily.addEventListener('click', () => setPaymentPlan('SUBSCRIPTION'));
     }
 
     // Proceed to Checkout from Cart Drawer
@@ -874,7 +988,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (buttonText) {
-            buttonText.textContent = `Pay ${formattedUsd} with Stripe`;
+            if (selectedPaymentPlan === 'SUBSCRIPTION') {
+                buttonText.textContent = `Subscribe & Pay $0.99 Daily`;
+            } else {
+                buttonText.textContent = `Pay ${formattedUsd} with Stripe`;
+            }
         }
         if (khqrBtnText) {
             khqrBtnText.textContent = `Generate KHQR Code (${formattedKhr})`;
@@ -997,7 +1115,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const amount = parseFloat(amountInput.value);
+        const isRecurring = (selectedPaymentPlan === 'SUBSCRIPTION');
+        const amount = isRecurring ? 0.99 : parseFloat(amountInput.value);
         const customerName = document.getElementById('customerName').value.trim();
         const customerEmail = document.getElementById('customerEmail').value.trim();
         const description = document.getElementById('description').value.trim();
@@ -1025,7 +1144,9 @@ document.addEventListener('DOMContentLoaded', () => {
             currency: 'USD',
             customerName: customerName,
             customerEmail: customerEmail,
-            description: description || 'Payment via Stripe Checkout'
+            description: description || (isRecurring ? 'VIP Engineering Daily Pass ($0.99/day recurring)' : 'Payment via Stripe Checkout'),
+            isRecurring: isRecurring,
+            billingInterval: isRecurring ? 'day' : null
         };
 
         try {
@@ -1066,11 +1187,17 @@ document.addEventListener('DOMContentLoaded', () => {
         payButton.disabled = isLoading;
         if (isLoading) {
             buttonSpinner.style.display = 'inline-block';
-            buttonText.textContent = 'Redirecting to Stripe...';
+            buttonText.textContent = (selectedPaymentPlan === 'SUBSCRIPTION')
+                ? 'Starting Daily VIP Subscription...'
+                : 'Redirecting to Stripe...';
         } else {
             buttonSpinner.style.display = 'none';
-            const num = parseFloat(amountInput.value) || 25;
-            buttonText.textContent = `Pay $${num.toFixed(2)} with Stripe`;
+            if (selectedPaymentPlan === 'SUBSCRIPTION') {
+                buttonText.textContent = 'Subscribe & Pay $0.99 Daily';
+            } else {
+                const num = parseFloat(amountInput.value) || 29;
+                buttonText.textContent = `Pay $${num.toFixed(2)} with Stripe`;
+            }
         }
     }
 
@@ -1226,8 +1353,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnDetailBuyNow) {
         btnDetailBuyNow.addEventListener('click', () => {
             if (!currentDetailProductId) return;
+            const isSub = currentDetailProductId === 'plan-daily-vip';
             addToCart(currentDetailProductId);
             closeProductDetailsModal();
+            if (isSub) {
+                setPaymentPlan('SUBSCRIPTION');
+            }
             showCheckoutView();
         });
     }

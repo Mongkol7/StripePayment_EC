@@ -23,5 +23,10 @@ public class OrderReceiptDto {
     private String description;
     private String stripeSessionId;
     private String stripePaymentIntentId;
+    private String paymentType;
+    private String billingInterval;
+    private String stripeCustomerId;
+    private String stripeSubscriptionId;
+    private String subscriptionStatus;
     private LocalDateTime createdAt;
 }

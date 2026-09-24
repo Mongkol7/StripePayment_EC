@@ -22,6 +22,8 @@ public class PaymentTransactionDto {
     private String stripeChargeId;
     private String stripePaymentIntentId;
     private String stripeRefundId;
+    private String stripeSubscriptionId;
+    private String stripeInvoiceId;
     private String paymentMethodType;
     private String cardBrand;
     private String cardLast4;

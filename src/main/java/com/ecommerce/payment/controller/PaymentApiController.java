@@ -5,7 +5,9 @@ import com.ecommerce.payment.service.PaymentOrderService;
 import com.ecommerce.payment.service.StripeService;
 import com.stripe.model.Charge;
 import com.stripe.model.Event;
+import com.stripe.model.Invoice;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.Subscription;
 import com.stripe.model.checkout.Session;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +62,16 @@ public class PaymentApiController {
     public ResponseEntity<OrderReceiptDto> getReceipt(@PathVariable String orderReference) {
         OrderReceiptDto receipt = paymentOrderService.getReceipt(orderReference);
         return ResponseEntity.ok(receipt);
+    }
+
+    /**
+     * Cancels an active recurring subscription for an order reference.
+     */
+    @PostMapping("/subscriptions/{orderReference}/cancel")
+    public ResponseEntity<SubscriptionCancelResponseDto> cancelSubscription(@PathVariable String orderReference) {
+        log.info("Request to cancel daily subscription for order: {}", orderReference);
+        SubscriptionCancelResponseDto response = paymentOrderService.cancelSubscription(orderReference);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -123,6 +137,37 @@ public class PaymentApiController {
                     Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
                     if (session != null) {
                         paymentOrderService.confirmPaymentBySessionId(session.getId());
+                    }
+                }
+                case "invoice.paid" -> {
+                    Invoice invoice = (Invoice) event.getDataObjectDeserializer().getObject().orElse(null);
+                    if (invoice != null && invoice.getSubscription() != null) {
+                        BigDecimal amount = invoice.getAmountPaid() != null
+                                ? BigDecimal.valueOf(invoice.getAmountPaid()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                                : BigDecimal.ZERO;
+                        paymentOrderService.handleInvoicePaid(
+                                invoice.getSubscription(),
+                                amount,
+                                invoice.getCurrency(),
+                                invoice.getId(),
+                                invoice.getCharge()
+                        );
+                    }
+                }
+                case "invoice.payment_failed" -> {
+                    Invoice invoice = (Invoice) event.getDataObjectDeserializer().getObject().orElse(null);
+                    if (invoice != null && invoice.getSubscription() != null) {
+                        paymentOrderService.handleInvoicePaymentFailed(
+                                invoice.getSubscription(),
+                                invoice.getId(),
+                                "Automated daily card deduction failed"
+                        );
+                    }
+                }
+                case "customer.subscription.deleted" -> {
+                    Subscription subscription = (Subscription) event.getDataObjectDeserializer().getObject().orElse(null);
+                    if (subscription != null) {
+                        paymentOrderService.handleSubscriptionDeleted(subscription.getId());
                     }
                 }
                 case "payment_intent.payment_failed" -> {

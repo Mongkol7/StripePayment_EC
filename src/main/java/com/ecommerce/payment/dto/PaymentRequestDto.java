@@ -39,6 +39,12 @@ public class PaymentRequestDto {
     @Size(max = 255, message = "Description must not exceed 255 characters")
     private String description;
 
+    @Builder.Default
+    private Boolean isRecurring = false;
+
+    @Builder.Default
+    private String billingInterval = "day";
+
     public String getCurrency() {
         return (currency == null || currency.isBlank()) ? "usd" : currency;
     }

@@ -242,16 +242,35 @@
           const card = document.createElement('div');
           card.className = 'order-card';
 
+          const isSubscription = order.paymentType === 'SUBSCRIPTION';
+          const subStatus = order.subscriptionStatus || (isSubscription ? 'ACTIVE' : null);
           const statusClass = `status-${(order.status || 'PENDING').toLowerCase()}`;
           const dateStr = order.createdAt ? new Date(order.createdAt).toLocaleString() : 'Recent';
           const primaryAmount = formatMoney(order.amount, currentCurrency);
           const secondaryAmount = currentCurrency === 'USD' ? formatMoney(order.amount, 'KHR') : formatMoney(order.amount, 'USD');
 
+          const subBadge = isSubscription
+            ? `<span style="margin-left: 0.5rem; background: rgba(255, 214, 10, 0.15); border: 1px solid rgba(255, 214, 10, 0.4); color: #ffd60a; font-size: 0.72rem; padding: 0.2rem 0.55rem; border-radius: var(--radius-sm); font-weight: 700; letter-spacing: 0.03em;">🔁 DAILY RECURRING ($0.99/day)</span>`
+            : '';
+
+          const subStatusHtml = isSubscription
+            ? `<div style="margin-top: 0.35rem; font-size: 0.82rem; font-weight: 700; color: ${subStatus === 'ACTIVE' ? 'var(--ios-green)' : '#ff453a'};">
+                ${subStatus === 'ACTIVE' ? '● Active Subscription (Billed Daily at $0.99 USD)' : '✕ Daily Subscription Cancelled'}
+               </div>`
+            : '';
+
+          const cancelSubBtn = (isSubscription && subStatus === 'ACTIVE')
+            ? `<button type="button" class="btn-preset btn-cancel-sub" data-ref="${order.orderReference}" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; background: rgba(255, 69, 58, 0.15); border-color: rgba(255, 69, 58, 0.35); color: #ff453a;">
+                 ✕ Cancel Daily Plan
+               </button>`
+            : '';
+
           card.innerHTML = `
             <div class="order-card-header">
-              <div>
+              <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem;">
                 <span class="order-ref-title">${order.orderReference}</span>
-                <div class="order-timestamp">📅 ${dateStr}</div>
+                ${subBadge}
+                <div class="order-timestamp" style="width: 100%;">📅 ${dateStr}</div>
               </div>
               <span class="status-badge ${statusClass}">
                 <span class="dot" style="width: 5px; height: 5px; border-radius: 50%; background: currentColor;"></span>
@@ -262,13 +281,14 @@
             <div class="order-card-body">
               <div class="order-details-col">
                 <div>
-                  <strong style="color: #ffffff; font-size: 1.05rem;">${order.description || 'E-Commerce Purchase'}</strong>
+                  <strong style="color: #ffffff; font-size: 1.05rem;">${order.description || (isSubscription ? 'VIP Engineering Daily Pass ($0.99/day)' : 'E-Commerce Purchase')}</strong>
                 </div>
-                <div style="color: var(--ios-label-secondary); font-size: 0.85rem;">
+                ${subStatusHtml}
+                <div style="color: var(--ios-label-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
                   Customer: <span style="color: var(--ios-blue); font-weight: 600;">${order.customerName || 'Customer'}</span> (${order.customerEmail || 'N/A'})
                 </div>
                 <div style="color: var(--ios-label-tertiary); font-size: 0.8rem;">
-                  Payment Method: <strong style="color: var(--ios-label-primary);">${order.paymentMethod || (order.stripeSessionId ? 'Stripe Gateway' : 'Online Payment')}</strong>
+                  Payment Method: <strong style="color: var(--ios-label-primary);">${order.paymentMethod || (isSubscription ? 'Stripe Daily Recurring' : (order.stripeSessionId ? 'Stripe Gateway' : 'Online Payment'))}</strong>
                 </div>
               </div>
 
@@ -277,13 +297,14 @@
                   <div style="font-size: 1.35rem; font-weight: 800; color: var(--ios-green);">${primaryAmount}</div>
                   <div style="font-size: 0.78rem; color: var(--ios-label-tertiary);">${secondaryAmount}</div>
                 </div>
-                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
                   <a href="/success.html?order_ref=${order.orderReference}" class="btn-preset" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; text-decoration: none;">
                     📄 View Receipt
                   </a>
                   <button type="button" class="btn-preset btn-quick-pdf" data-ref="${order.orderReference}" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; background: rgba(10, 132, 255, 0.15); border-color: rgba(10, 132, 255, 0.3); color: var(--ios-blue);">
                     📥 PDF
                   </button>
+                  ${cancelSubBtn}
                 </div>
               </div>
             </div>
@@ -293,6 +314,52 @@
           card.querySelector('.btn-quick-pdf').addEventListener('click', () => {
             downloadPdfForOrder(order);
           });
+
+          // Subscription cancellation button handler
+          const cancelBtn = card.querySelector('.btn-cancel-sub');
+          if (cancelBtn) {
+            cancelBtn.addEventListener('click', async () => {
+              const confirmMsg = `Are you sure you want to cancel your daily recurring subscription for ${order.orderReference} ($0.99/day)?\n\nStripe will immediately stop all recurring charges.`;
+              if (!confirm(confirmMsg)) {
+                return;
+              }
+
+              cancelBtn.disabled = true;
+              cancelBtn.textContent = 'Cancelling...';
+
+              try {
+                const res = await fetch(`/api/v1/payments/subscriptions/${encodeURIComponent(order.orderReference)}/cancel`, {
+                  method: 'POST'
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                  showToast(`Daily subscription for ${order.orderReference} successfully cancelled.`);
+                  // Update locally cached order status if present
+                  try {
+                    const localOrders = JSON.parse(localStorage.getItem('stripe_ec_user_orders') || '[]');
+                    const found = localOrders.find(o => o.orderReference === order.orderReference);
+                    if (found) {
+                      found.subscriptionStatus = 'CANCELLED';
+                      localStorage.setItem('stripe_ec_user_orders', JSON.stringify(localOrders));
+                    }
+                  } catch (e) {}
+
+                  // Refresh orders display
+                  fetchOrders(searchInput.value.trim());
+                } else {
+                  showToast(data.message || 'Failed to cancel daily subscription.', true);
+                  cancelBtn.disabled = false;
+                  cancelBtn.textContent = '✕ Cancel Daily Plan';
+                }
+              } catch (err) {
+                console.error('Cancellation error:', err);
+                showToast('Unable to connect to payment server to cancel subscription.', true);
+                cancelBtn.disabled = false;
+                cancelBtn.textContent = '✕ Cancel Daily Plan';
+              }
+            });
+          }
 
           ordersList.appendChild(card);
         });
@@ -347,7 +414,7 @@
             </thead>
             <tbody>
               <tr>
-                <td>${order.description || 'Engineering E-Book / Software'}</td>
+                <td>${order.description || (order.paymentType === 'SUBSCRIPTION' ? 'VIP Engineering Daily Pass (Daily Recurring Subscription - $0.99 / day)' : 'Engineering E-Book / Software')}</td>
                 <td style="text-align: center;">1</td>
                 <td style="text-align: right; font-weight: 700;">$${amountUsd.toFixed(2)}</td>
               </tr>

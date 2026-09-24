@@ -75,6 +75,7 @@
           <button type="button" class="filter-chip" data-category="BACKEND">Spring Boot & Java</button>
           <button type="button" class="filter-chip" data-category="CLOUD">Cloud & DevOps</button>
           <button type="button" class="filter-chip" data-category="ARCHITECTURE">System Architecture</button>
+          <button type="button" class="filter-chip" data-category="SUBSCRIPTION" style="border-color: rgba(255, 214, 10, 0.4); color: #ffd60a;">🔁 Daily VIP Pass ($0.99/day)</button>
         </div>
       </section>
 
@@ -125,6 +126,27 @@
 
           <!-- Payment Form -->
           <form id="paymentForm">
+
+            <!-- Payment Mode Selector: One-Time vs Daily Recurring Subscription -->
+            <div class="billing-type-selector" style="margin-bottom: 1.25rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-xl); padding: 0.4rem; display: flex; gap: 0.5rem;">
+              <button type="button" class="billing-type-btn active" id="btnModeOneTime" data-mode="ONE_TIME" style="flex: 1; padding: 0.75rem 1rem; border-radius: var(--radius-lg); border: none; background: var(--ios-blue); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.45rem; transition: all 0.2s ease;">
+                <span>💳</span> One-Time Purchase
+              </button>
+              <button type="button" class="billing-type-btn" id="btnModeDaily" data-mode="SUBSCRIPTION" style="flex: 1; padding: 0.75rem 1rem; border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--ios-label-secondary); font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.45rem; transition: all 0.2s ease;">
+                <span>🔁</span> Daily Subscription ($0.99/day)
+              </button>
+            </div>
+
+            <!-- Daily Subscription Information Banner -->
+            <div id="dailySubscriptionNotice" class="kh-card-notice" style="display: none; background: rgba(255, 214, 10, 0.1); border-color: rgba(255, 214, 10, 0.3); color: #ffd60a; margin-bottom: 1.25rem;">
+              <span style="font-size: 1.3rem; margin-right: 0.5rem;">🔁</span>
+              <div>
+                <strong>Automated Daily Recurring Billing:</strong>
+                <div style="font-size: 0.84rem; color: rgba(255,255,255,0.85); margin-top: 0.2rem;">
+                  Your card will be billed <strong>$0.99 USD</strong> today, and Stripe will automatically cut off <strong>$0.99 USD every 24 hours</strong> from your card. You can cancel anytime from your Orders page.
+                </div>
+              </div>
+            </div>
             
             <!-- Total Payment Input Area -->
             <div class="amount-hero-box">
@@ -135,7 +157,7 @@
                   type="number" 
                   id="amountInput" 
                   class="amount-input" 
-                  value="0.10" 
+                  value="29.00" 
                   step="0.01" 
                   min="0.01" 
                   max="99999.00" 

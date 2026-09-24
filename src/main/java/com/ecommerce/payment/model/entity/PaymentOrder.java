@@ -53,6 +53,23 @@ public class PaymentOrder {
     @Column(name = "stripe_payment_intent_id", length = 255)
     private String stripePaymentIntentId;
 
+    @Column(name = "payment_type", length = 30)
+    @Builder.Default
+    private String paymentType = "ONE_TIME";
+
+    @Column(name = "billing_interval", length = 20)
+    @Builder.Default
+    private String billingInterval = "DAY";
+
+    @Column(name = "stripe_customer_id", length = 255)
+    private String stripeCustomerId;
+
+    @Column(name = "stripe_subscription_id", length = 255)
+    private String stripeSubscriptionId;
+
+    @Column(name = "subscription_status", length = 30)
+    private String subscriptionStatus;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

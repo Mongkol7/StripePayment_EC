@@ -6,6 +6,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.Refund;
+import com.stripe.model.Subscription;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.RefundCreateParams;
@@ -35,6 +36,7 @@ public class StripeService {
 
     /**
      * Creates a Stripe Checkout Session for a given payment order.
+     * Supports both one-time payments and daily recurring subscriptions.
      * Supports both USD directly and KHR automatically converted to USD cents.
      */
     public Session createCheckoutSession(PaymentOrder order, PaymentRequestDto request) throws StripeException {
@@ -52,37 +54,65 @@ public class StripeService {
                 ? order.getDescription()
                 : "E-Commerce Payment (" + order.getOrderReference() + ")";
 
+        boolean isRecurring = Boolean.TRUE.equals(request.getIsRecurring());
+
+        SessionCreateParams.LineItem.PriceData.Builder priceDataBuilder = SessionCreateParams.LineItem.PriceData.builder()
+                .setCurrency(currency != null ? currency.toLowerCase() : "usd")
+                .setUnitAmount(amountInCents)
+                .setProductData(
+                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                .setName(productName + (isRecurring ? " (Daily Subscription)" : ""))
+                                .setDescription("Order Ref: " + order.getOrderReference() + " | Customer: " + order.getCustomerName())
+                                .build()
+                );
+
+        if (isRecurring) {
+            priceDataBuilder.setRecurring(
+                    SessionCreateParams.LineItem.PriceData.Recurring.builder()
+                            .setInterval(SessionCreateParams.LineItem.PriceData.Recurring.Interval.DAY)
+                            .setIntervalCount(1L)
+                            .build()
+            );
+        }
+
         SessionCreateParams.Builder paramsBuilder = SessionCreateParams.builder()
-                .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setMode(isRecurring ? SessionCreateParams.Mode.SUBSCRIPTION : SessionCreateParams.Mode.PAYMENT)
                 .setCustomerEmail(order.getCustomerEmail())
                 .setClientReferenceId(order.getOrderReference())
                 .putMetadata("orderReference", order.getOrderReference())
                 .putMetadata("customerName", order.getCustomerName())
                 .putMetadata("originalCurrency", order.getCurrency())
                 .putMetadata("originalAmount", order.getAmount().toString())
+                .putMetadata("isRecurring", String.valueOf(isRecurring))
                 .setSuccessUrl(baseUrl + "/success.html?session_id={CHECKOUT_SESSION_ID}&order_ref=" + order.getOrderReference())
                 .setCancelUrl(baseUrl + "/cancel.html?order_ref=" + order.getOrderReference())
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity(1L)
-                                .setPriceData(
-                                        SessionCreateParams.LineItem.PriceData.builder()
-                                                .setCurrency("usd")
-                                                .setUnitAmount(amountInCents)
-                                                .setProductData(
-                                                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                                                .setName(productName)
-                                                                .setDescription("Order Reference: " + order.getOrderReference() + " | Customer: " + order.getCustomerName())
-                                                                .build()
-                                                )
-                                                .build()
-                                )
+                                .setPriceData(priceDataBuilder.build())
                                 .build()
                 );
 
         Session session = Session.create(paramsBuilder.build());
-        log.info("Stripe Checkout Session created: ID={}, URL={}", session.getId(), session.getUrl());
+        log.info("Stripe Checkout Session created: ID={}, Mode={}, URL={}", session.getId(), session.getMode(), session.getUrl());
         return session;
+    }
+
+    /**
+     * Cancels an active Stripe recurring subscription.
+     */
+    public Subscription cancelSubscription(String subscriptionId) throws StripeException {
+        Subscription subscription = Subscription.retrieve(subscriptionId);
+        Subscription cancelled = subscription.cancel();
+        log.info("Stripe Subscription cancelled: ID={}, Status={}", cancelled.getId(), cancelled.getStatus());
+        return cancelled;
+    }
+
+    /**
+     * Retrieves an active Stripe recurring subscription.
+     */
+    public Subscription retrieveSubscription(String subscriptionId) throws StripeException {
+        return Subscription.retrieve(subscriptionId);
     }
 
     /**

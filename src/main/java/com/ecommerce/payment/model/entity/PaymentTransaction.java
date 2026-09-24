@@ -51,6 +51,12 @@ public class PaymentTransaction {
     @Column(name = "stripe_refund_id", length = 255)
     private String stripeRefundId;
 
+    @Column(name = "stripe_subscription_id", length = 255)
+    private String stripeSubscriptionId;
+
+    @Column(name = "stripe_invoice_id", length = 255)
+    private String stripeInvoiceId;
+
     @Column(name = "payment_method_type", length = 50)
     private String paymentMethodType;
 
