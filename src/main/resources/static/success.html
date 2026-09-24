@@ -29,12 +29,18 @@
 
     <nav class="nav-links">
       <a href="/" class="nav-link">
-        <span>📚</span> Catalog
+        <span>🏠</span> Home
       </a>
       <a href="/orders.html" class="nav-link">
-        <span>📦</span> My Orders
+        <span>📦</span> Orders
       </a>
     </nav>
+
+    <div class="nav-actions">
+      <a href="/" class="btn-preset" style="text-decoration: none; padding: 0.45rem 1rem; font-size: 0.86rem; font-weight: 600;">
+        <span>🛍️</span> Store Home
+      </a>
+    </div>
   </header>
 
   <main class="checkout-wrapper" style="max-width: 820px; padding: 0 1rem 4rem 1rem;">
@@ -244,8 +250,16 @@
       const amountUsd = parseFloat(orderData.amount) || 25.00;
       const amountKhr = Math.round(amountUsd * 4100);
 
-      const isSub = orderData.paymentType === 'SUBSCRIPTION';
+      const isSub = orderData.paymentType === 'SUBSCRIPTION' ||
+                    (orderData.description && orderData.description.toLowerCase().includes('vip')) ||
+                    (orderData.description && orderData.description.toLowerCase().includes('daily')) ||
+                    Math.abs(amountUsd - 0.99) < 0.05 ||
+                    orderData.subscriptionStatus === 'ACTIVE';
+
       if (isSub) {
+        localStorage.setItem('stripe_ec_vip_active', 'true');
+        localStorage.setItem('stripe_ec_vip_order_ref', ref);
+        localStorage.setItem('stripe_ec_vip_since', new Date().toISOString());
         const subBanner = document.getElementById('subscriptionActiveBanner');
         if (subBanner) subBanner.style.display = 'block';
         const itemNote = document.getElementById('invItemNote');
@@ -266,23 +280,28 @@
       // Save order to history in local storage so customer can look it up immediately on orders.html
       try {
         const existing = JSON.parse(localStorage.getItem('stripe_ec_user_orders') || '[]');
-        if (!existing.some(o => o.orderReference === ref)) {
-          existing.unshift({
-            orderReference: ref,
-            amount: amountUsd,
-            currency: 'USD',
-            status: 'COMPLETED',
-            paymentType: orderData.paymentType || (isSub ? 'SUBSCRIPTION' : 'ONE_TIME'),
-            subscriptionStatus: orderData.subscriptionStatus || (isSub ? 'ACTIVE' : null),
-            customerName: orderData.customerName,
-            customerEmail: orderData.customerEmail,
-            description: orderData.description || (isSub ? 'VIP Engineering Daily Pass ($0.99/day)' : 'Developer Books & Software Package'),
-            paymentMethod: isKhqr ? 'KHQR (Bakong / ABA)' : (isSub ? 'Stripe Daily Recurring' : 'Stripe (Visa / Mastercard)'),
-            stripeSessionId: txnRef,
-            createdAt: orderData.createdAt || new Date().toISOString()
-          });
-          localStorage.setItem('stripe_ec_user_orders', JSON.stringify(existing));
+        const existingIndex = existing.findIndex(o => o.orderReference === ref);
+        const orderRecord = {
+          orderReference: ref,
+          amount: amountUsd,
+          currency: 'USD',
+          status: 'COMPLETED',
+          paymentType: orderData.paymentType || (isSub ? 'SUBSCRIPTION' : 'ONE_TIME'),
+          subscriptionStatus: isSub ? 'ACTIVE' : (orderData.subscriptionStatus || null),
+          customerName: orderData.customerName,
+          customerEmail: orderData.customerEmail,
+          description: orderData.description || (isSub ? 'VIP Engineering Daily Pass ($0.99/day)' : 'Developer Books & Software Package'),
+          paymentMethod: isKhqr ? 'KHQR (Bakong / ABA)' : (isSub ? 'Stripe Daily Recurring' : 'Stripe (Visa / Mastercard)'),
+          stripeSessionId: txnRef,
+          createdAt: orderData.createdAt || new Date().toISOString()
+        };
+
+        if (existingIndex >= 0) {
+          existing[existingIndex] = orderRecord;
+        } else {
+          existing.unshift(orderRecord);
         }
+        localStorage.setItem('stripe_ec_user_orders', JSON.stringify(existing));
       } catch (e) {}
 
       // ========================================================

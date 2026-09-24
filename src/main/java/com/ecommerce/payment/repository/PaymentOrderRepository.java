@@ -16,7 +16,8 @@ public interface PaymentOrderRepository extends JpaRepository<PaymentOrder, Long
     Optional<PaymentOrder> findByStripeSubscriptionId(String stripeSubscriptionId);
     List<PaymentOrder> findByCustomerEmailIgnoreCaseOrderByCreatedAtDesc(String customerEmail);
     List<PaymentOrder> findByOrderReferenceContainingIgnoreCaseOrderByCreatedAtDesc(String orderReference);
-    List<PaymentOrder> findTop20ByOrderByCreatedAtDesc();
+    List<PaymentOrder> findAllByOrderByCreatedAtDesc();
+    List<PaymentOrder> findTop50ByOrderByCreatedAtDesc();
 
     @Query("SELECT o FROM PaymentOrder o WHERE " +
            "LOWER(o.orderReference) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +

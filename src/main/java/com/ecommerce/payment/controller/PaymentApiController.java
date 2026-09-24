@@ -75,6 +75,16 @@ public class PaymentApiController {
     }
 
     /**
+     * Cancels ALL active recurring subscriptions.
+     */
+    @PostMapping("/subscriptions/cancel-all")
+    public ResponseEntity<SubscriptionCancelResponseDto> cancelAllSubscriptions() {
+        log.info("Request to cancel ALL active daily subscriptions");
+        SubscriptionCancelResponseDto response = paymentOrderService.cancelAllSubscriptions();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Searches order history by customer email or order reference.
      */
     @GetMapping("/orders/lookup")

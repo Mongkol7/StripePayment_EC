@@ -26,14 +26,14 @@
     </a>
 
     <nav class="nav-links">
-      <a href="#catalogSection" class="nav-link active" id="navCatalogBtn">
-        <span>📚</span> Catalog
-      </a>
-      <a href="#checkoutSection" class="nav-link" id="navCheckoutBtn" style="display: none;">
-        <span>💳</span> Checkout
+      <a href="/" class="nav-link active" id="navHomeBtn">
+        <span>🏠</span> Home
       </a>
       <a href="/orders.html" class="nav-link" id="navOrdersBtn">
         <span>📦</span> Orders
+      </a>
+      <a href="#checkoutSection" class="nav-link" id="navCheckoutBtn" style="display: none;">
+        <span>💳</span> Checkout
       </a>
     </nav>
 
@@ -49,14 +49,57 @@
         <span>🛒</span> Cart
         <span class="cart-count-badge" id="cartBadge">0</span>
       </button>
+
+      <!-- Apple Customer Profile Avatar & Dropdown Trigger -->
+      <div class="profile-dropdown-container">
+        <button type="button" class="profile-trigger-btn" id="btnProfileTrigger" aria-label="Customer Account">
+          <span id="profileAvatarIcon" class="profile-avatar-icon" style="position: relative; display: inline-flex; width: 28px; height: 28px; border-radius: 50%; background: var(--apple-fill); align-items: center; justify-content: center; font-size: 0.9rem;">
+            👤
+            <span id="profileCrownBadge" class="vip-badge-crown" style="display: none;">👑</span>
+          </span>
+          <span id="profileStatusText" style="font-size: 0.82rem; font-weight: 600;">Account</span>
+          <span style="font-size: 0.7rem; color: var(--apple-text-tertiary);">▾</span>
+        </button>
+
+        <!-- Profile Dropdown Menu -->
+        <div class="profile-dropdown-menu" id="profileDropdown">
+          <div class="profile-user-info">
+            <div class="profile-user-name" id="dropdownUserName">Valued Customer</div>
+            <div class="profile-user-email" id="dropdownUserEmail">customer@example.com</div>
+            <div id="dropdownMembershipTag" class="profile-membership-tag free">
+              <span>🏷️</span> Standard Member
+            </div>
+            <div id="dropdownVipExpiryNotice" style="display: none; font-size: 0.76rem; color: var(--apple-green-dark); font-weight: 600; margin-top: 0.35rem;">
+              Access valid until: <span id="dropdownExpiryTime">Active</span>
+            </div>
+          </div>
+          <!-- VIP Cancel Action inside Profile Menu -->
+          <button type="button" class="btn-profile-cancel-sub" id="btnProfileCancelSub" style="display: none;">
+            ✕ Cancel VIP Subscription
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
   <!-- Storefront Main Container -->
   <main class="store-container">
 
+    <!-- Top-Level Segmented Store View Switcher: Buy Books vs VIP Pass -->
+    <div class="store-view-nav-wrap">
+      <div class="store-view-nav">
+        <button type="button" class="store-view-btn active" id="tabViewBuy" data-view="buy">
+          <span>📚</span> Buy Individual Books
+        </button>
+        <button type="button" class="store-view-btn" id="tabViewPass" data-view="pass">
+          <span>👑</span> VIP All-Access Pass
+          <span class="view-btn-badge">$0.99/day</span>
+        </button>
+      </div>
+    </div>
+
     <!-- ========================================================
-         VIEW 1: STORE CATALOG (Default view)
+         VIEW 1: BUY INDIVIDUAL BOOKS CATALOG
          ======================================================== -->
     <div id="catalogView" class="view-fade-in">
       <!-- Catalog Hero Banner -->
@@ -66,22 +109,129 @@
         </div>
         <h1 class="catalog-title">Developer Knowledge Hub & Architecture Books</h1>
         <p class="catalog-subtitle">
-          Accelerate your career with industry-proven guides. Pay instantly using Stripe (Visa/Mastercard) or Cambodian KHQR (Bakong / ABA).
+          Buy individual books for lifetime ownership & offline PDF downloads, or unlock everything with the VIP Pass.
         </p>
 
         <!-- Apple Segmented Category Filter Bar -->
         <div class="catalog-filter-bar">
-          <button type="button" class="filter-chip active" data-category="ALL">All Items</button>
+          <button type="button" class="filter-chip active" data-category="ALL">All Books</button>
           <button type="button" class="filter-chip" data-category="BACKEND">Spring Boot & Java</button>
           <button type="button" class="filter-chip" data-category="CLOUD">Cloud & DevOps</button>
           <button type="button" class="filter-chip" data-category="ARCHITECTURE">System Architecture</button>
-          <button type="button" class="filter-chip" data-category="SUBSCRIPTION" style="border-color: rgba(255, 214, 10, 0.4); color: #ffd60a;">🔁 Daily VIP Pass ($0.99/day)</button>
         </div>
       </section>
 
       <!-- Product Showcase Grid (Task 3.1) -->
       <section class="products-grid" id="productsGrid">
         <!-- Injected dynamically by app.js with Apple iOS 27 Cards -->
+      </section>
+    </div>
+
+    <!-- ========================================================
+         VIEW 1B: VIP ALL-ACCESS PASS DEDICATED MEMBERSHIP VIEW
+         ======================================================== -->
+    <div id="vipPassView" style="display: none;" class="view-fade-in">
+      <section class="vip-pass-container" id="vipPassSection">
+        
+        <!-- Active Subscription Status Banner (shown only if subscriber) -->
+        <div id="vipActiveDashboardBanner" class="vip-active-banner" style="display: none;">
+          <div style="display: flex; align-items: center; gap: 0.85rem;">
+            <span style="font-size: 2.2rem;">👑</span>
+            <div>
+              <div style="font-weight: 800; font-size: 1.15rem; color: var(--apple-text-primary);">
+                You have an Active VIP All-Access Pass!
+              </div>
+              <div style="font-size: 0.85rem; color: var(--apple-text-secondary); margin-top: 0.2rem;">
+                All 6 engineering courses are completely unlocked. Auto-renews daily at <strong>$0.99 USD</strong>.
+              </div>
+              <div style="font-size: 0.82rem; color: var(--apple-green-dark); font-weight: 700; margin-top: 0.25rem;">
+                Access valid until: <span id="vipActiveBannerExpiry">24 hours remaining</span>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+            <button type="button" class="btn-preset" id="btnVipBrowseCourses" style="background: var(--apple-blue); color: #fff; font-weight: 700; padding: 0.65rem 1.25rem;">
+              <span>📚</span> Read Unlocked Courses
+            </button>
+            <button type="button" class="btn-preset btn-confirm-cancel" id="btnVipPassCancel" style="padding: 0.65rem 1.25rem;">
+              ✕ Cancel Subscription
+            </button>
+          </div>
+        </div>
+
+        <!-- Non-Subscriber Showcase Card -->
+        <div class="vip-showcase-card" id="vipShowcaseCard">
+          <div class="vip-header-grid">
+            <div>
+              <div class="brand-badge" style="background: rgba(255, 214, 10, 0.15); border-color: rgba(255, 214, 10, 0.4); color: #b26a00; margin-bottom: 0.85rem;">
+                <span>✨</span> ALL-INCLUSIVE MEMBERSHIP
+              </div>
+              <h2 style="font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 0.75rem; color: var(--apple-text-primary);">
+                VIP Engineering All-Access Pass
+              </h2>
+              <p style="font-size: 1rem; color: var(--apple-text-secondary); line-height: 1.5; margin-bottom: 1.5rem;">
+                Why buy books one by one? Unlock every course, architectural blueprint, and GitHub source repository for less than the price of a cup of coffee per day.
+              </p>
+
+              <ul class="vip-perks-list">
+                <li class="vip-perk-item">
+                  <span class="vip-perk-icon">✓</span>
+                  <div>
+                    <strong>Instant Access to All 6 Full E-Books ($121 Value):</strong>
+                    <div style="font-size: 0.84rem; color: var(--apple-text-secondary);">Read Spring Boot 3, System Design, Concurrency, Kubernetes, Postgres & Full-Stack guides online anytime.</div>
+                  </div>
+                </li>
+                <li class="vip-perk-item">
+                  <span class="vip-perk-icon">✓</span>
+                  <div>
+                    <strong>Production Source Code & Docker Stacks:</strong>
+                    <div style="font-size: 0.84rem; color: var(--apple-text-secondary);">Clone ready-to-run GitHub repositories, Helm charts, and microservice architectures.</div>
+                  </div>
+                </li>
+                <li class="vip-perk-item">
+                  <span class="vip-perk-icon">✓</span>
+                  <div>
+                    <strong>Smart Study Economics (Save 64% – 68%):</strong>
+                    <div style="font-size: 0.84rem; color: var(--apple-text-secondary);">Finish any 8-day course for just $7.92 total with VIP instead of paying $25.00+ for a lifetime license.</div>
+                  </div>
+                </li>
+                <li class="vip-perk-item">
+                  <span class="vip-perk-icon">✓</span>
+                  <div>
+                    <strong>Zero Long-Term Lock-In:</strong>
+                    <div style="font-size: 0.84rem; color: var(--apple-text-secondary);">Billed automatically every 24 hours via Stripe. 1-click cancellation anytime in your profile or orders page.</div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Pricing Action Box -->
+            <div class="vip-pricing-box">
+              <div style="font-size: 0.85rem; font-weight: 700; color: var(--apple-blue); text-transform: uppercase; letter-spacing: 0.04em;">
+                DAILY PASS PLAN
+              </div>
+              <div class="vip-price-hero">
+                $0.99
+              </div>
+              <div class="vip-price-period">
+                USD / billed every 24 hours
+              </div>
+              <div style="font-size: 0.82rem; color: var(--apple-green-dark); font-weight: 700; margin: 0.75rem 0 1.5rem 0;">
+                ≈ 4,059 ៛ KHR (No Minimum Lock-In)
+              </div>
+
+              <button type="button" class="btn-stripe-pay" id="btnVipGetStarted" style="width: 100%; justify-content: center; font-size: 1rem; padding: 0.9rem;">
+                <span>⚡</span>
+                <span>Get VIP Pass ($0.99/day)</span>
+              </button>
+              
+              <div style="font-size: 0.76rem; color: var(--apple-text-tertiary); margin-top: 1rem;">
+                🔒 Secured with Stripe Certified Checkout.<br>Cancel anytime with 1 click.
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
     </div>
 
@@ -127,17 +277,7 @@
           <!-- Payment Form -->
           <form id="paymentForm">
 
-            <!-- Payment Mode Selector: One-Time vs Daily Recurring Subscription -->
-            <div class="billing-type-selector" style="margin-bottom: 1.25rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-xl); padding: 0.4rem; display: flex; gap: 0.5rem;">
-              <button type="button" class="billing-type-btn active" id="btnModeOneTime" data-mode="ONE_TIME" style="flex: 1; padding: 0.75rem 1rem; border-radius: var(--radius-lg); border: none; background: var(--ios-blue); color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.45rem; transition: all 0.2s ease;">
-                <span>💳</span> One-Time Purchase
-              </button>
-              <button type="button" class="billing-type-btn" id="btnModeDaily" data-mode="SUBSCRIPTION" style="flex: 1; padding: 0.75rem 1rem; border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--ios-label-secondary); font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.45rem; transition: all 0.2s ease;">
-                <span>🔁</span> Daily Subscription ($0.99/day)
-              </button>
-            </div>
-
-            <!-- Daily Subscription Information Banner -->
+            <!-- Daily Subscription Information Banner (shown automatically when VIP Pass is in cart) -->
             <div id="dailySubscriptionNotice" class="kh-card-notice" style="display: none; background: rgba(255, 214, 10, 0.1); border-color: rgba(255, 214, 10, 0.3); color: #ffd60a; margin-bottom: 1.25rem;">
               <span style="font-size: 1.3rem; margin-right: 0.5rem;">🔁</span>
               <div>
@@ -475,23 +615,77 @@
               <!-- Dynamically populated topic chips -->
             </div>
 
-            <!-- Price & Action Bar -->
+            <!-- Price & Action Bar (Lifetime Price is embedded inside action buttons) -->
             <div class="details-action-bar">
-              <div class="details-price-box">
-                <span class="price-primary" id="detailModalPricePrimary">$0.10 USD</span>
-                <span class="price-secondary" id="detailModalPriceSecondary">≈ 410 ៛ KHR</span>
-              </div>
               <div class="details-button-group">
                 <button type="button" class="btn-detail-add-cart" id="btnDetailAddToCart">
-                  <span>🛒</span> Add to Cart
+                  <span class="btn-icon-text"><span>🛒</span> Add to Cart</span>
+                  <span class="modal-btn-price-pill" id="detailModalAddPrice">$0.10</span>
                 </button>
                 <button type="button" class="btn-detail-buy-now" id="btnDetailBuyNow">
-                  <span>⚡</span> Buy Now
+                  <span class="btn-icon-text"><span>⚡</span> Buy Lifetime</span>
+                  <span class="modal-btn-price-pill" id="detailModalBuyNowPrice">$0.10</span>
                 </button>
               </div>
+              <button type="button" class="btn-detail-vip-shortcut" id="btnDetailVipShortcut" style="display: none;">
+                <span>👑</span> <span>Or Read Unlimited with VIP Pass ($0.99/day)</span> <span class="vip-arrow">→</span>
+              </button>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       APPLE CUPERTINO SUBSCRIPTION CANCELLATION MODAL ("Are you sure?")
+       ======================================================== -->
+  <div class="confirm-modal-overlay" id="cancelConfirmationModal">
+    <div class="confirm-modal-card">
+      <div class="confirm-icon-box">
+        ⚠️
+      </div>
+      <h3 class="confirm-title">Cancel VIP Subscription?</h3>
+      <p class="confirm-desc">
+        Are you sure you want to stop automatic daily renewals ($0.99/day)? You will keep full VIP access until your current 24-hour billing cycle ends.
+      </p>
+      <div class="confirm-btn-group">
+        <button type="button" class="btn-keep-sub" id="btnKeepSub">
+          Keep My VIP Pass
+        </button>
+        <button type="button" class="btn-confirm-cancel" id="btnConfirmCancel">
+          Yes, Cancel Pass
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       APPLE CUPERTINO INTERACTIVE COURSE READER MODAL
+       ======================================================== -->
+  <div class="reader-modal-overlay" id="courseReaderModal">
+    <div class="reader-modal-container">
+      <div class="reader-header">
+        <div class="reader-title-wrap">
+          <span style="font-size: 1.5rem;" id="readerBookIcon">📖</span>
+          <div>
+            <div style="font-weight: 800; font-size: 1.05rem; color: var(--apple-text-primary);" id="readerBookTitle">Course Title</div>
+            <div style="font-size: 0.78rem; color: var(--apple-green-dark); font-weight: 700;">👑 Unlocked with VIP All-Access Pass</div>
+          </div>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseReaderModal" aria-label="Close Reader">✕</button>
+      </div>
+
+      <div class="reader-body-split">
+        <!-- Sidebar Navigation: Chapters -->
+        <aside class="reader-sidebar" id="readerSidebarChapters">
+          <!-- Dynamically populated chapters -->
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="reader-content-pane" id="readerContentPane">
+          <!-- Dynamically populated chapter text, architecture diagrams and code snippets -->
+        </main>
       </div>
     </div>
   </div>

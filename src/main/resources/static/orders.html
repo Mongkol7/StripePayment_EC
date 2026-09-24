@@ -28,10 +28,10 @@
     </a>
 
     <nav class="nav-links">
-      <a href="/" class="nav-link">
-        <span>📚</span> Catalog
+      <a href="/" class="nav-link" id="navHomeBtn">
+        <span>🏠</span> Home
       </a>
-      <a href="/orders.html" class="nav-link active">
+      <a href="/orders.html" class="nav-link active" id="navOrdersBtn">
         <span>📦</span> Orders
       </a>
     </nav>
@@ -43,9 +43,41 @@
         <button type="button" class="currency-btn" data-currency="KHR" id="btnCurrKHR">៛ KHR</button>
       </div>
 
-      <a href="/" class="btn-preset" style="text-decoration: none; padding: 0.45rem 1rem; font-size: 0.86rem; font-weight: 600;">
-        <span>🛍️</span> Store
-      </a>
+      <!-- Apple Capsule Cart Drawer Trigger -->
+      <button type="button" class="btn-cart-trigger" id="btnOpenCart" aria-label="Open Shopping Cart">
+        <span>🛒</span> Cart
+        <span class="cart-count-badge" id="cartBadge" style="display: none;">0</span>
+      </button>
+
+      <!-- Apple Customer Profile Avatar & Dropdown Trigger -->
+      <div class="profile-dropdown-container">
+        <button type="button" class="profile-trigger-btn" id="btnProfileTrigger" aria-label="Customer Account">
+          <span id="profileAvatarIcon" class="profile-avatar-icon" style="position: relative; display: inline-flex; width: 28px; height: 28px; border-radius: 50%; background: var(--apple-fill); align-items: center; justify-content: center; font-size: 0.9rem;">
+            👤
+            <span id="profileCrownBadge" class="vip-badge-crown" style="display: none;">👑</span>
+          </span>
+          <span id="profileStatusText" style="font-size: 0.82rem; font-weight: 600;">Account</span>
+          <span style="font-size: 0.7rem; color: var(--apple-text-tertiary);">▾</span>
+        </button>
+
+        <!-- Profile Dropdown Menu -->
+        <div class="profile-dropdown-menu" id="profileDropdown">
+          <div class="profile-user-info">
+            <div class="profile-user-name">Valued Customer</div>
+            <div class="profile-user-email">customer@example.com</div>
+            <div id="dropdownMembershipTag" class="profile-membership-tag free">
+              <span>🏷️</span> Standard Member
+            </div>
+            <div id="dropdownVipExpiryNotice" style="display: none; font-size: 0.76rem; color: var(--apple-green-dark); font-weight: 600; margin-top: 0.35rem;">
+              Access valid until: <span id="dropdownExpiryTime">Active (24h)</span>
+            </div>
+          </div>
+          <!-- VIP Cancel Action inside Profile Menu -->
+          <button type="button" class="btn-profile-cancel-sub" id="btnProfileCancelSub" style="display: none;">
+            ✕ Cancel VIP Subscription
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -100,6 +132,46 @@
     </div>
 
   </main>
+
+  <!-- ========================================================
+       APPLE iOS SHEET CART DRAWER
+       ======================================================== -->
+  <div class="cart-overlay" id="cartOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer">
+    <!-- iOS Sheet Grabber -->
+    <div class="sheet-grabber"></div>
+
+    <div class="cart-header">
+      <div class="cart-title-wrap">
+        <span>🛒</span>
+        <span class="cart-title">Shopping Cart</span>
+      </div>
+      <button type="button" class="btn-close-cart" id="btnCloseCart" aria-label="Close cart">✕</button>
+    </div>
+
+    <div class="cart-body" id="cartItemsList">
+      <!-- Populated by JavaScript -->
+    </div>
+
+    <div class="cart-footer">
+      <div class="cart-summary-row">
+        <span>Items Total</span>
+        <span id="cartSubtotal" class="amount">$0.00</span>
+      </div>
+      <div class="cart-summary-row">
+        <span>Digital Delivery</span>
+        <span style="color: var(--ios-green); font-weight: 700;">Instant (Free)</span>
+      </div>
+      <div class="cart-summary-row total">
+        <span>Grand Total</span>
+        <span id="cartGrandTotal" class="amount">$0.00</span>
+      </div>
+      <button type="button" class="btn-cart-checkout" id="btnCartCheckout">
+        <span>Process Payment</span>
+        <span>→</span>
+      </button>
+    </div>
+  </aside>
 
   <!-- Hidden Invoice Template for direct PDF downloads from Order History -->
   <div id="pdfDownloadHiddenContainer" style="display: none;">
@@ -207,8 +279,43 @@
           );
         }
 
-        // Sort latest first
-        all.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        // Check for active subscription in loaded records
+        const activeSub = all.find(o => 
+          (o.paymentType === 'SUBSCRIPTION' || (o.description && (o.description.toLowerCase().includes('vip') || o.description.toLowerCase().includes('daily')))) &&
+          o.status === 'COMPLETED' &&
+          o.subscriptionStatus !== 'CANCELLED'
+        );
+        if (activeSub) {
+          localStorage.setItem('stripe_ec_vip_active', 'true');
+          localStorage.setItem('stripe_ec_vip_order_ref', activeSub.orderReference);
+          if (profileAvatarIcon) profileAvatarIcon.classList.add('vip-avatar-glow');
+          if (profileCrownBadge) profileCrownBadge.style.display = 'block';
+          if (profileStatusText) {
+            profileStatusText.textContent = 'VIP Member';
+            profileStatusText.style.color = '#b26a00';
+          }
+          if (dropdownMembershipTag) {
+            dropdownMembershipTag.className = 'profile-membership-tag vip';
+            dropdownMembershipTag.innerHTML = '<span>👑</span> VIP All-Access Subscriber';
+          }
+          if (dropdownVipExpiryNotice) dropdownVipExpiryNotice.style.display = 'block';
+          if (btnProfileCancelSub) btnProfileCancelSub.style.display = 'block';
+        } else {
+          localStorage.setItem('stripe_ec_vip_active', 'false');
+          localStorage.removeItem('stripe_ec_vip_order_ref');
+          if (profileAvatarIcon) profileAvatarIcon.classList.remove('vip-avatar-glow');
+          if (profileCrownBadge) profileCrownBadge.style.display = 'none';
+          if (profileStatusText) {
+            profileStatusText.textContent = 'Account';
+            profileStatusText.style.color = 'var(--apple-text-primary)';
+          }
+          if (dropdownMembershipTag) {
+            dropdownMembershipTag.className = 'profile-membership-tag free';
+            dropdownMembershipTag.innerHTML = '<span>🏷️</span> Standard Member';
+          }
+          if (dropdownVipExpiryNotice) dropdownVipExpiryNotice.style.display = 'none';
+          if (btnProfileCancelSub) btnProfileCancelSub.style.display = 'none';
+        }
 
         allLoadedOrders = all;
         renderOrders();
@@ -485,6 +592,189 @@
         toastBox.classList.add('active');
         setTimeout(() => toastBox.classList.remove('active'), 3500);
       }
+
+      // Profile Dropdown Toggle & VIP State Sync
+      const btnProfileTrigger = document.getElementById('btnProfileTrigger');
+      const profileDropdown = document.getElementById('profileDropdown');
+      const profileAvatarIcon = document.getElementById('profileAvatarIcon');
+      const profileCrownBadge = document.getElementById('profileCrownBadge');
+      const profileStatusText = document.getElementById('profileStatusText');
+      const dropdownMembershipTag = document.getElementById('dropdownMembershipTag');
+
+      const dropdownVipExpiryNotice = document.getElementById('dropdownVipExpiryNotice');
+      const btnProfileCancelSub = document.getElementById('btnProfileCancelSub');
+
+      const isVip = localStorage.getItem('stripe_ec_vip_active') === 'true';
+      if (isVip) {
+        if (profileAvatarIcon) profileAvatarIcon.classList.add('vip-avatar-glow');
+        if (profileCrownBadge) profileCrownBadge.style.display = 'block';
+        if (profileStatusText) {
+          profileStatusText.textContent = 'VIP Member';
+          profileStatusText.style.color = '#b26a00';
+        }
+        if (dropdownMembershipTag) {
+          dropdownMembershipTag.className = 'profile-membership-tag vip';
+          dropdownMembershipTag.innerHTML = '<span>👑</span> VIP All-Access Subscriber';
+        }
+        if (dropdownVipExpiryNotice) dropdownVipExpiryNotice.style.display = 'block';
+        if (btnProfileCancelSub) {
+          btnProfileCancelSub.style.display = 'block';
+          btnProfileCancelSub.addEventListener('click', async () => {
+            const orderRef = localStorage.getItem('stripe_ec_vip_order_ref') || '';
+            if (!confirm('Are you sure you want to cancel your VIP All-Access subscription ($0.99/day)?')) return;
+            try {
+              if (orderRef) {
+                await fetch(`/api/v1/payments/subscriptions/${encodeURIComponent(orderRef)}/cancel`, { method: 'POST' });
+              }
+              localStorage.setItem('stripe_ec_vip_active', 'false');
+              showToast('VIP Subscription cancelled.');
+              setTimeout(() => window.location.reload(), 1000);
+            } catch (e) {
+              showToast('Cancelled locally.');
+              setTimeout(() => window.location.reload(), 1000);
+            }
+          });
+        }
+      }
+
+      if (btnProfileTrigger && profileDropdown) {
+        btnProfileTrigger.addEventListener('click', (e) => {
+          e.stopPropagation();
+          profileDropdown.classList.toggle('active');
+        });
+        document.addEventListener('click', (e) => {
+          if (!profileDropdown.contains(e.target) && !btnProfileTrigger.contains(e.target)) {
+            profileDropdown.classList.remove('active');
+          }
+        });
+      }
+
+      // Shopping Cart Drawer Management on Orders Page
+      const btnOpenCart = document.getElementById('btnOpenCart');
+      const cartBadge = document.getElementById('cartBadge');
+      const cartDrawer = document.getElementById('cartDrawer');
+      const cartOverlay = document.getElementById('cartOverlay');
+      const btnCloseCart = document.getElementById('btnCloseCart');
+      const cartItemsList = document.getElementById('cartItemsList');
+      const cartSubtotal = document.getElementById('cartSubtotal');
+      const cartGrandTotal = document.getElementById('cartGrandTotal');
+      const btnCartCheckout = document.getElementById('btnCartCheckout');
+
+      let cart = JSON.parse(localStorage.getItem('stripe_ec_cart') || '[]');
+
+      function updateCartBadge() {
+        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+        if (cartBadge) {
+          cartBadge.textContent = count;
+          cartBadge.style.display = count > 0 ? 'inline-flex' : 'none';
+        }
+      }
+
+      function saveCart() {
+        localStorage.setItem('stripe_ec_cart', JSON.stringify(cart));
+        updateCartBadge();
+        renderCartDrawer();
+      }
+
+      function renderCartDrawer() {
+        if (!cartItemsList) return;
+        if (cart.length === 0) {
+          cartItemsList.innerHTML = `
+            <div class="cart-empty-state">
+              <div class="empty-icon">🛒</div>
+              <h4>Your Cart is Empty</h4>
+              <p>Explore engineering guides and books to add to your library.</p>
+              <a href="/" class="btn-continue-shopping" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; margin-top: 1rem; padding: 0.65rem 1.2rem; background: var(--apple-blue); color: #fff; border-radius: var(--radius-lg); font-weight: 700; font-size: 0.88rem;">
+                Browse Store →
+              </a>
+            </div>
+          `;
+          if (cartSubtotal) cartSubtotal.textContent = formatMoney(0, currentCurrency);
+          if (cartGrandTotal) cartGrandTotal.textContent = formatMoney(0, currentCurrency);
+          return;
+        }
+
+        const subtotal = cart.reduce((sum, item) => sum + (item.priceUsd * item.quantity), 0);
+        if (cartSubtotal) cartSubtotal.textContent = formatMoney(subtotal, currentCurrency);
+        if (cartGrandTotal) cartGrandTotal.textContent = formatMoney(subtotal, currentCurrency);
+
+        cartItemsList.innerHTML = cart.map(item => `
+          <div class="cart-item-card">
+            <div class="cart-item-cover">
+              ${item.coverImage ? `<img src="${item.coverImage}" alt="${item.title}" class="cart-item-thumb" />` : `<div class="cart-item-icon">${item.icon || '📘'}</div>`}
+            </div>
+            <div class="cart-item-details">
+              <div class="cart-item-title">${item.title}</div>
+              <div class="cart-item-price-unit">${formatMoney(item.priceUsd, currentCurrency)} each</div>
+              <div class="cart-item-qty-row">
+                <div class="qty-stepper">
+                  <button type="button" class="btn-qty-minus" data-id="${item.id}">−</button>
+                  <span class="qty-display">${item.quantity}</span>
+                  <button type="button" class="btn-qty-plus" data-id="${item.id}">+</button>
+                </div>
+                <div class="cart-item-line-total">${formatMoney(item.priceUsd * item.quantity, currentCurrency)}</div>
+              </div>
+            </div>
+            <button type="button" class="btn-remove-item" data-id="${item.id}" aria-label="Remove item">✕</button>
+          </div>
+        `).join('');
+
+        cartItemsList.querySelectorAll('.btn-qty-minus').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const item = cart.find(i => i.id === btn.dataset.id);
+            if (item) {
+              item.quantity -= 1;
+              if (item.quantity <= 0) cart = cart.filter(i => i.id !== btn.dataset.id);
+              saveCart();
+            }
+          });
+        });
+        cartItemsList.querySelectorAll('.btn-qty-plus').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const item = cart.find(i => i.id === btn.dataset.id);
+            if (item) {
+              item.quantity += 1;
+              saveCart();
+            }
+          });
+        });
+        cartItemsList.querySelectorAll('.btn-remove-item').forEach(btn => {
+          btn.addEventListener('click', () => {
+            cart = cart.filter(i => i.id !== btn.dataset.id);
+            saveCart();
+          });
+        });
+      }
+
+      function openCartDrawer() {
+        if (cartDrawer && cartOverlay) {
+          cartDrawer.classList.add('active');
+          cartOverlay.classList.add('active');
+          renderCartDrawer();
+        }
+      }
+
+      function closeCartDrawer() {
+        if (cartDrawer && cartOverlay) {
+          cartDrawer.classList.remove('active');
+          cartOverlay.classList.remove('active');
+        }
+      }
+
+      if (btnOpenCart) btnOpenCart.addEventListener('click', openCartDrawer);
+      if (btnCloseCart) btnCloseCart.addEventListener('click', closeCartDrawer);
+      if (cartOverlay) cartOverlay.addEventListener('click', closeCartDrawer);
+      if (btnCartCheckout) {
+        btnCartCheckout.addEventListener('click', () => {
+          if (cart.length === 0) {
+            showToast('Your cart is empty. Add items first!');
+            return;
+          }
+          window.location.href = '/?checkout=true';
+        });
+      }
+
+      updateCartBadge();
 
       // Initial Fetch - read URL query or order reference if present, or load all real database records
       setCurrency(currentCurrency);
