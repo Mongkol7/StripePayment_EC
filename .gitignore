@@ -37,4 +37,8 @@ build/
 *.log
 src/main/resources/application.properties
 
+### Documentation & Memory (Ignored in Git) ###
+docs/
+docs/*
+
 

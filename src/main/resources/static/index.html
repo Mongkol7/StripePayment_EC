@@ -80,23 +80,21 @@
         </div>
       </div>
     </div>
+
+    <!-- MacBook Notch Sub-Navbar Switcher (Zero-Gap Attached Under Header) -->
+    <div class="macbook-notch-nav" id="storeViewNavWrap">
+      <button type="button" class="notch-btn store-view-btn active" id="tabViewBuy" data-view="buy">
+        <span>📚</span> Buy Individual Books
+      </button>
+      <div class="notch-separator"></div>
+      <button type="button" class="notch-btn store-view-btn" id="tabViewPass" data-view="pass">
+        <span>👑</span> VIP All-Access Pass
+      </button>
+    </div>
   </header>
 
   <!-- Storefront Main Container -->
   <main class="store-container">
-
-    <!-- Top-Level Segmented Store View Switcher: Buy Books vs VIP Pass -->
-    <div class="store-view-nav-wrap">
-      <div class="store-view-nav">
-        <button type="button" class="store-view-btn active" id="tabViewBuy" data-view="buy">
-          <span>📚</span> Buy Individual Books
-        </button>
-        <button type="button" class="store-view-btn" id="tabViewPass" data-view="pass">
-          <span>👑</span> VIP All-Access Pass
-          <span class="view-btn-badge">$0.99/day</span>
-        </button>
-      </div>
-    </div>
 
     <!-- ========================================================
          VIEW 1: BUY INDIVIDUAL BOOKS CATALOG
@@ -587,7 +585,7 @@
 
       <div class="modal-body product-details-modal-body">
         <div class="product-details-grid">
-          <!-- Left Column: High-Res Book Cover Artwork -->
+          <!-- Left Column: High-Res Book Cover Artwork, Specs & Action Buttons -->
           <div class="details-cover-column">
             <div class="details-cover-frame">
               <img id="detailModalCover" src="" alt="Book Cover" class="details-cover-image" />
@@ -596,26 +594,10 @@
               <span>⚡</span> Instant Digital License & Code Access
             </div>
             <div class="details-specs-grid" id="detailModalSpecs">
-              <!-- Dynamically populated specs -->
-            </div>
-          </div>
-
-          <!-- Right Column: Info, Syllabus Topics & Action -->
-          <div class="details-info-column">
-            <div class="details-category-pill" id="detailModalCategory">BACKEND ARCHITECTURE</div>
-            <h2 class="details-book-title" id="detailModalTitle">Book Title</h2>
-            <div class="details-book-author" id="detailModalAuthor">Author & Engineering Series</div>
-            <p class="details-book-desc" id="detailModalDesc">Detailed description...</p>
-
-            <!-- Key Syllabus / Architecture Topics -->
-            <div class="details-section-title">
-              <span>📚</span> Architecture & Engineering Modules:
-            </div>
-            <div class="details-topics-list" id="detailModalTopics">
-              <!-- Dynamically populated topic chips -->
+              <!-- Dynamically populated specs (Pages, Format, Edition, Level) -->
             </div>
 
-            <!-- Price & Action Bar (Lifetime Price is embedded inside action buttons) -->
+            <!-- Price & Action Bar (Moved Under Edition & Level Columns) -->
             <div class="details-action-bar">
               <div class="details-button-group">
                 <button type="button" class="btn-detail-add-cart" id="btnDetailAddToCart">
@@ -630,6 +612,22 @@
               <button type="button" class="btn-detail-vip-shortcut" id="btnDetailVipShortcut" style="display: none;">
                 <span>👑</span> <span>Or Read Unlimited with VIP Pass ($0.99/day)</span> <span class="vip-arrow">→</span>
               </button>
+            </div>
+          </div>
+
+          <!-- Right Column: Info & Syllabus Topics -->
+          <div class="details-info-column">
+            <div class="details-category-pill" id="detailModalCategory">BACKEND ARCHITECTURE</div>
+            <h2 class="details-book-title" id="detailModalTitle">Book Title</h2>
+            <div class="details-book-author" id="detailModalAuthor">Author & Engineering Series</div>
+            <p class="details-book-desc" id="detailModalDesc">Detailed description...</p>
+
+            <!-- Key Syllabus / Architecture Topics -->
+            <div class="details-section-title">
+              <span>📚</span> Architecture & Engineering Modules:
+            </div>
+            <div class="details-topics-list" id="detailModalTopics">
+              <!-- Dynamically populated topic chips -->
             </div>
           </div>
         </div>

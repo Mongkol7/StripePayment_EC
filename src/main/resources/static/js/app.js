@@ -604,7 +604,7 @@ const session = await stripe.checkout.sessions.create({
             // Update Store Switcher VIP Tab
             const tabPassBtn = document.getElementById('tabViewPass');
             if (tabPassBtn) {
-                tabPassBtn.innerHTML = `<span>👑</span> VIP All-Access Pass <span class="view-btn-badge" style="background: rgba(52, 199, 89, 0.2); color: #248a3d; border: 1px solid rgba(52, 199, 89, 0.4); font-weight: 700;">✓ Subscribed</span>`;
+                tabPassBtn.innerHTML = `<span>👑</span> VIP All-Access Pass`;
             }
             // Transform VIP Pass view CTA to indicate active subscription (Darker color, 'Subscribed' label)
             if (btnVipGetStarted) {
@@ -634,7 +634,7 @@ const session = await stripe.checkout.sessions.create({
             }
             const tabPassBtn = document.getElementById('tabViewPass');
             if (tabPassBtn) {
-                tabPassBtn.innerHTML = `<span>👑</span> VIP All-Access Pass <span class="view-btn-badge">$0.99/day</span>`;
+                tabPassBtn.innerHTML = `<span>👑</span> VIP All-Access Pass`;
             }
             if (btnVipGetStarted) {
                 btnVipGetStarted.classList.remove('btn-subscribed-dark');
@@ -893,6 +893,12 @@ const session = await stripe.checkout.sessions.create({
     }
     if (btnVipBrowseCourses) {
         btnVipBrowseCourses.addEventListener('click', () => switchStoreView('buy'));
+    }
+
+    // Check URL query parameters or hash to open VIP pass view directly if requested
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('view') === 'pass' || window.location.hash === '#vip' || window.location.hash === '#vipPassSection') {
+        switchStoreView('pass');
     }
 
     // VIP Get Started CTA button
